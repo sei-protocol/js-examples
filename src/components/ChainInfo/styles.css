@@ -1,0 +1,51 @@
+.infoHeader {
+    flex-direction: row;
+    align-items: center;
+    width: 100%;
+}
+
+.connect {
+    flex-direction: row;
+    align-items: center;
+    width: 100%;
+    margin-top: 12px;
+}
+
+.walletButton {
+    flex-direction: row;
+    background-color: var(--white-80);
+    color: var(--background-color);
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    height: 40px;
+    margin-right: 12px;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 13pt;
+    transition: 250ms all ease-out;
+}
+
+.walletButton:hover {
+    opacity: 0.8;
+}
+
+.walletButton:last-of-type {
+    margin-right: 0;
+}
+
+.connectedIcon {
+    width: 24px;
+    height: 24px;
+    color: green;
+    margin-right: 12px
+}
+
+@media (max-width: 480px) {
+    .infoHeader {
+        flex-wrap: wrap;
+    }
+}

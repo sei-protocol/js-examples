@@ -1,0 +1,91 @@
+.card {
+    align-items: flex-start;
+    border: var(--white-12) solid 2px;
+    background-color: var(--white-6);
+    flex: 0;
+    max-width: 100%;
+    width: 960px;
+    border-radius: 3px;
+    margin-bottom: 24px;
+    padding: 12px;
+}
+
+.card:last-of-type {
+    margin-bottom: 0;
+}
+
+.cardContent {
+    padding: 12px 0;
+    width: 100%;
+}
+
+.dropdown {
+    margin: 12px 24px 12px 0;
+    height: 40px;
+    width: 120px;
+}
+
+.Dropdown-control {
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.Dropdown-placeholder {
+    font-weight: 600;
+    font-size: 13pt;
+    color: var(--background-color);
+}
+
+.labelInput {
+    flex-direction: row;
+    align-items: center;
+    font-weight: 500;
+    padding: 12px;
+    background-color: var(--white-12);
+    border-radius: 6px;
+    margin: 12px 0;
+    width: 100%;
+}
+
+.label {
+    color: var(--input-placeholder);
+    flex: 0;
+    white-space: nowrap;
+    margin-right: 12px;
+    width: 96px;
+    min-width: 96px;
+}
+
+.input {
+    background-color: transparent;
+    box-shadow: none;
+    border: none;
+    outline: none;
+    flex: 1;
+    font-size: 18px;
+}
+
+.input:hover, .input:active, .input:focus {
+    box-shadow: none;
+    border: none;
+    outline: none;
+}
+
+.input:disabled {
+    cursor: not-allowed;
+}
+
+
+.sectionHeader {
+    width: 100%;
+    padding-bottom: 12px;
+    border-bottom: var(--white-12) solid 1px;
+}
+
+.Toastify__toast-body {
+    flex-direction: row;
+}
+
+.Toastify__close-button {
+    display: none;
+}
