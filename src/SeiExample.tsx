@@ -3,7 +3,7 @@ import './common.css';
 import { useWallet } from '@sei-js/react';
 import { UseWalletOptions } from '@sei-js/react/hooks/useWallet/types';
 import { useRecoilValue } from 'recoil';
-import { ChainInfo, QueryClient, AccountInfo, SendTokens } from './components';
+import { ChainInfo, AccountInfo, SendTokens } from './components';
 import { selectedChainConfigAtom, customChainIdAtom, customRestUrlAtom, customRpcUrlAtom } from './recoil/atoms/chainInfo';
 import { inputWalletAtom } from './recoil/atoms/wallet';
 
@@ -38,9 +38,8 @@ const SeiExample = () => {
 			<div className='appContent'>
 				<ChainInfo seiWallet={seiWallet} />
 				<AccountInfo seiWallet={seiWallet} />
-				<QueryClient />
 			</div>
-			<SendTokens seiWallet={seiWallet}/>
+			<SendTokens seiWallet={seiWallet} />
 		</div>
 	);
 };

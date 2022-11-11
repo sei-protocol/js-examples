@@ -1,13 +1,15 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import './styles.css';
 import { IoCopySharp, IoSendSharp } from 'react-icons/io5';
 import { toast } from 'react-toastify';
+import { useSetRecoilState } from 'recoil';
+import { useQueryClient } from '@sei-js/react';
 import { AccountInfoProps } from './types';
 import { BalanceResponseType } from '../../types/BalanceResponse';
-import { useSetRecoilState } from 'recoil';
 import { balanceToSendAtom } from '../../recoil/atoms/sendTokens';
+import './styles.css';
 
 const AccountInfo = ({ seiWallet }: AccountInfoProps) => {
+	const { queryClient } = useQueryClient(seiWallet.restUrl);
 	const setBalanceToSend = useSetRecoilState(balanceToSendAtom);
 
 	const [walletBalances, setWalletBalances] = useState<BalanceResponseType[]>([]);
@@ -18,11 +20,11 @@ const AccountInfo = ({ seiWallet }: AccountInfoProps) => {
 
 	useEffect(() => {
 		const fetchBalances = async () => {
-			if (walletAccount) {
-				const balanceResponse = await fetch(`${restUrl}/cosmos/bank/v1beta1/balances/${walletAccount.address}`);
-				const balanceJson = await balanceResponse.json();
-				return balanceJson.balances;
+			if (queryClient && walletAccount) {
+				const { balances } = await queryClient.cosmos.bank.v1beta1.allBalances({ address: walletAccount.address });
+				return balances as BalanceResponseType[];
 			}
+			return [];
 		};
 
 		fetchBalances().then(setWalletBalances);
@@ -42,7 +44,7 @@ const AccountInfo = ({ seiWallet }: AccountInfoProps) => {
 
 		return walletBalances?.map((balance) => {
 			return (
-				<div className='tokenRow'>
+				<div className='tokenRow' key={balance.denom}>
 					<div className='tokenAmount'>{balance.amount}</div>
 					<div className='tokenDenom'>{balance.denom}</div>
 					<IoSendSharp className='icon' onClick={() => setBalanceToSend(balance)} />
