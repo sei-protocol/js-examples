@@ -38,21 +38,21 @@ const ChainInfo = ({ seiWallet }: ChainInfoProps) => {
 		};
 
 		const getButtonText = () => {
-			if(isWalletInstalled) {
-				if(isWalletConnected) return `connected to ${wallet}`
+			if (isWalletInstalled) {
+				if (isWalletConnected) return `connected to ${wallet}`;
 				return `connect to ${wallet}`;
 			}
 
-			return `install ${wallet}`
-		}
+			return `install ${wallet}`;
+		};
 
 		return (
-			<div className='walletButton' onClick={onClickWallet}>
-				{isWalletConnected && <IoCheckmarkCircleSharp className='connectedIcon'/>}
+			<div className='walletButton' onClick={onClickWallet} key={wallet}>
+				{isWalletConnected && <IoCheckmarkCircleSharp className='connectedIcon' />}
 				{getButtonText()}
 			</div>
 		);
-	}
+	};
 
 	return (
 		<div className='card'>
@@ -100,9 +100,7 @@ const ChainInfo = ({ seiWallet }: ChainInfoProps) => {
 					onChange={(e) => setCustomRpcUrl(e.target.value)}
 				/>
 			</div>
-			<div className='connect'>
-				{supportedWallets.map(renderSupportedWallet)}
-			</div>
+			<div className='connect'>{supportedWallets.map(renderSupportedWallet)}</div>
 		</div>
 	);
 };

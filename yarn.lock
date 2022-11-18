@@ -680,10 +680,10 @@
     "@osmonauts/lcd" "^0.8.0"
     protobufjs "^6.11.2"
 
-"@sei-js/react@^1.0.42":
-  version "1.0.42"
-  resolved "https://registry.npmjs.org/@sei-js/react/-/react-1.0.42.tgz#9a125d36fd576c84fcd8f277f34183891688f4bd"
-  integrity sha512-ysMkZC9ntqwW6dn8cPmWlpwyuy6rcknC9xRoGJ0Id/Ib2SIr9fp4EKUdZqZghpfcBDKbIqEjnn/8mCIF2gQxlg==
+"@sei-js/react@^1.0.44":
+  version "1.0.44"
+  resolved "https://registry.yarnpkg.com/@sei-js/react/-/react-1.0.44.tgz#b8fe2aa2fca62c2d6d298022e0737164138304be"
+  integrity sha512-JSyCTEwGKWHXwGj0U/NYnaNMPZQd6u8CkP68qyw4aHH+/5rtgmowg8X2/JDqFcMRT9+J6TNRwbhgG36jIDTzeQ==
   dependencies:
     "@sei-js/core" "^1.0.36"
 
