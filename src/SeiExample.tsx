@@ -1,11 +1,9 @@
 import React, { useMemo } from 'react';
 import './common.css';
 import { useWallet } from '@sei-js/react';
-import { UseWalletOptions } from '@sei-js/react/hooks/useWallet/types';
 import { useRecoilValue } from 'recoil';
 import { ChainInfo, AccountInfo, SendTokens } from './components';
-import { selectedChainConfigAtom, customChainIdAtom, customRestUrlAtom, customRpcUrlAtom } from './recoil/atoms/chainInfo';
-import { inputWalletAtom } from './recoil/atoms/wallet';
+import { selectedChainConfigAtom, customChainIdAtom, customRestUrlAtom, customRpcUrlAtom, inputWalletAtom } from './recoil';
 
 const SeiExample = () => {
 	const inputWallet = useRecoilValue(inputWalletAtom);
@@ -28,7 +26,7 @@ const SeiExample = () => {
 		inputWallet,
 		autoConnect: inputWallet !== undefined,
 		chainConfiguration: useWalletChainConfiguration
-	} as UseWalletOptions);
+	});
 
 	return (
 		<div className='app'>
