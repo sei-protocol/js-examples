@@ -2,19 +2,17 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { IoCopySharp, IoSendSharp } from 'react-icons/io5';
 import { toast } from 'react-toastify';
 import { useSetRecoilState } from 'recoil';
-import { useQueryClient } from '@sei-js/react';
-import { AccountInfoProps } from './types';
+import { useQueryClient, useWallet } from '@sei-js/react';
 import { BalanceResponseType } from '../../types/BalanceResponse';
 import { balanceToSendAtom } from '../../recoil/atoms/sendTokens';
 import './styles.css';
 
-const AccountInfo = ({ seiWallet }: AccountInfoProps) => {
-	const { queryClient } = useQueryClient(seiWallet.restUrl);
+const AccountInfo = () => {
+	const { offlineSigner, accounts } = useWallet();
+	const { queryClient } = useQueryClient();
 	const setBalanceToSend = useSetRecoilState(balanceToSendAtom);
 
 	const [walletBalances, setWalletBalances] = useState<BalanceResponseType[]>([]);
-
-	const { offlineSigner, accounts, restUrl, error } = seiWallet;
 
 	const walletAccount = useMemo(() => accounts?.[0], [accounts]);
 

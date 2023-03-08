@@ -1,32 +1,34 @@
 import React from 'react';
-import './styles.css';
-import { useRecoilState, useSetRecoilState } from 'recoil';
+import { useRecoilState } from 'recoil';
 import Dropdown from 'react-dropdown';
-import { selectedChainConfigAtom, customChainIdAtom, customRestUrlAtom, customRpcUrlAtom } from '../../recoil/atoms/chainInfo';
-import { inputWalletAtom } from '../../recoil/atoms/wallet';
 import { IoCheckmarkCircleSharp } from 'react-icons/io5';
-import { ChainInfoProps } from './types';
+import { WalletWindowKey } from '@sei-js/core';
+import { useWallet } from '@sei-js/react';
 
-const ChainInfo = ({ seiWallet }: ChainInfoProps) => {
+import { selectedChainConfigAtom, customChainIdAtom, customRestUrlAtom, customRpcUrlAtom } from '../../recoil/atoms/chainInfo';
+
+import './styles.css';
+
+const ChainInfo = () => {
+	const wallet = useWallet();
 	const [chainConfiguration, setChainConfiguration] = useRecoilState(selectedChainConfigAtom);
 	const [customChainId, setCustomChainId] = useRecoilState(customChainIdAtom);
 	const [customRestUrl, setCustomRestUrl] = useRecoilState(customRestUrlAtom);
 	const [customRpcUrl, setCustomRpcUrl] = useRecoilState(customRpcUrlAtom);
 
-	const setInputWallet = useSetRecoilState(inputWalletAtom);
-
 	const disabled = chainConfiguration !== 'custom';
 
-	const { chainId, restUrl, rpcUrl, installedWallets, supportedWallets, connectedWallet } = seiWallet;
+	const { chainId, restUrl, rpcUrl, installedWallets, supportedWallets, connectedWallet, setInputWallet } = wallet;
 
-	const renderSupportedWallet = (wallet) => {
-		const isWalletInstalled = installedWallets.includes(wallet);
-		const isWalletConnected = connectedWallet === wallet;
+	const renderSupportedWallet = (walletKey: WalletWindowKey) => {
+		const isWalletInstalled = installedWallets.includes(walletKey);
+		const isWalletConnected = connectedWallet === walletKey;
 
 		const onClickWallet = () => {
-			if (isWalletInstalled) setInputWallet(wallet);
-			else {
-				switch (wallet) {
+			if (isWalletInstalled && setInputWallet) {
+				setInputWallet(walletKey);
+			} else {
+				switch (walletKey) {
 					case 'keplr':
 						window.open('https://www.keplr.app/download', '_blank');
 						return;
@@ -39,15 +41,15 @@ const ChainInfo = ({ seiWallet }: ChainInfoProps) => {
 
 		const getButtonText = () => {
 			if (isWalletInstalled) {
-				if (isWalletConnected) return `connected to ${wallet}`;
-				return `connect to ${wallet}`;
+				if (isWalletConnected) return `connected to ${walletKey}`;
+				return `connect to ${walletKey}`;
 			}
 
-			return `install ${wallet}`;
+			return `install ${walletKey}`;
 		};
 
 		return (
-			<div className='walletButton' onClick={onClickWallet} key={wallet}>
+			<div className='walletButton' onClick={onClickWallet} key={walletKey}>
 				{isWalletConnected && <IoCheckmarkCircleSharp className='connectedIcon' />}
 				{getButtonText()}
 			</div>

@@ -1,1 +1,1 @@
-export type ChainConfig = 'testnet' | 'devnet' | 'custom'
+export type ChainConfig = 'testnet' | 'devnet' | 'custom';
