@@ -3,8 +3,9 @@ import { IoCopySharp, IoSendSharp } from 'react-icons/io5';
 import { toast } from 'react-toastify';
 import { useSetRecoilState } from 'recoil';
 import { useQueryClient, useWallet } from '@sei-js/react';
-import { BalanceResponseType } from '../../types/BalanceResponse';
-import { balanceToSendAtom } from '../../recoil/atoms/sendTokens';
+
+import { BalanceResponseType } from '../../types';
+import { balanceToSendAtom } from '../../recoil';
 import './styles.css';
 
 const AccountInfo = () => {

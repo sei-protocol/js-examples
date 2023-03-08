@@ -1,5 +1,4 @@
-import React, { useMemo } from 'react';
-import { SeiWalletProvider, useWallet } from '@sei-js/react';
+import { SeiWalletProvider } from '@sei-js/react';
 import { useRecoilValue } from 'recoil';
 
 import { ChainInfo, AccountInfo, SendTokens } from './components';

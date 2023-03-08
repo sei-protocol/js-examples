@@ -3,7 +3,8 @@ import { calculateFee } from '@cosmjs/stargate';
 import { toast } from 'react-toastify';
 import { useSigningClient, useWallet } from '@sei-js/react';
 import { useRecoilState } from 'recoil';
-import { balanceToSendAtom } from '../../recoil/atoms/sendTokens';
+
+import { balanceToSendAtom } from '../../recoil';
 
 const SendTokens = () => {
 	const { accounts } = useWallet();

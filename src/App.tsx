@@ -1,9 +1,10 @@
 import './App.css';
 import { RecoilRoot } from 'recoil';
+import { ToastContainer } from 'react-toastify';
 import 'react-dropdown/style.css';
 import 'react-toastify/dist/ReactToastify.css';
+
 import SeiExample from './SeiExample';
-import { ToastContainer } from 'react-toastify';
 
 function App() {
 	return (

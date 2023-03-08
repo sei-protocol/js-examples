@@ -5,8 +5,7 @@ import { IoCheckmarkCircleSharp } from 'react-icons/io5';
 import { WalletWindowKey } from '@sei-js/core';
 import { useWallet } from '@sei-js/react';
 
-import { selectedChainConfigAtom, customChainIdAtom, customRestUrlAtom, customRpcUrlAtom } from '../../recoil/atoms/chainInfo';
-
+import { selectedChainConfigAtom, customChainIdAtom, customRestUrlAtom, customRpcUrlAtom } from '../../recoil';
 import './styles.css';
 
 const ChainInfo = () => {
