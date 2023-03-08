@@ -29,8 +29,8 @@ const AccountInfo = () => {
 	}, [offlineSigner]);
 
 	const renderBalances = () => {
-		if (!walletBalances) {
-			return <p>{error}</p>;
+		if (!walletAccount) {
+			return <p>Wallet not connected</p>;
 		}
 		if (walletBalances.length === 0) {
 			return (

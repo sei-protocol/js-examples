@@ -1,6 +1,6 @@
 import { ChainConfiguration } from '@sei-js/react';
 import { selector } from 'recoil';
-import { selectedChainConfigAtom } from '../atoms';
+import { customChainIdAtom, customRestUrlAtom, customRpcUrlAtom, selectedChainConfigAtom } from '../atoms';
 
 export const selectedChainConfigSelector = selector<ChainConfiguration>({
 	key: 'selectedChainConfigSelector',
@@ -19,10 +19,15 @@ export const selectedChainConfigSelector = selector<ChainConfiguration>({
 				rpcUrl: 'https://rpc.sei-devnet-3.seinetwork.io/'
 			};
 		}
+
+		// Get custom values
+		const customChainId = get(customChainIdAtom);
+		const customRestUrl = get(customRestUrlAtom);
+		const customRpcUrl = get(customRpcUrlAtom);
 		return {
-			chainId: '',
-			restUrl: '',
-			rpcUrl: ''
+			chainId: customChainId,
+			restUrl: customRestUrl,
+			rpcUrl: customRpcUrl
 		};
 	}
 });

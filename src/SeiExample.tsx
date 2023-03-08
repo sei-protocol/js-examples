@@ -19,7 +19,7 @@ const SeiExample = () => {
 					<ChainInfo />
 					<AccountInfo />
 				</div>
-				{/* <SendTokens seiWallet={seiWallet} /> */}
+				<SendTokens />
 			</div>
 		</SeiWalletProvider>
 	);

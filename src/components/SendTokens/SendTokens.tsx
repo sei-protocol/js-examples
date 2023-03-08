@@ -1,22 +1,19 @@
 import React, { useMemo, useState } from 'react';
-import { calculateFee, GasPrice } from '@cosmjs/stargate';
+import { calculateFee } from '@cosmjs/stargate';
 import { toast } from 'react-toastify';
-import { useSigningClient } from '@sei-js/react';
+import { useSigningClient, useWallet } from '@sei-js/react';
 import { useRecoilState } from 'recoil';
 import { balanceToSendAtom } from '../../recoil/atoms/sendTokens';
-import { SendTokensProps } from './types';
 
-const SendTokens = ({seiWallet}: SendTokensProps) => {
+const SendTokens = () => {
+	const { accounts } = useWallet();
+	const { signingClient } = useSigningClient();
 	const [balanceToSend, setBalanceToSend] = useRecoilState(balanceToSendAtom);
 
 	const [isSending, setIsSending] = useState<boolean>(false);
 	const [channelId, setChannelId] = useState<string>('');
 	const [sendAmount, setSendAmount] = useState<string>('');
 	const [destinationAddress, setDestinationAddress] = useState<string>('');
-
-	const { offlineSigner, rpcUrl, accounts } = seiWallet;
-
-	const { signingClient } = useSigningClient(rpcUrl, offlineSigner);
 
 	const walletAccount = useMemo(() => accounts?.[0], [accounts]);
 
@@ -25,32 +22,31 @@ const SendTokens = ({seiWallet}: SendTokensProps) => {
 	const isIbc = balanceToSend.denom.startsWith('ibc/');
 
 	const onClickSend = async () => {
-		if (!walletAccount) return;
+		if (!walletAccount || !signingClient) return;
 
-		const fee = calculateFee(150000, GasPrice.fromString('3750usei'));
+		const fee = calculateFee(120000, '0.1usei');
 		const transferAmount = { amount: sendAmount, denom: balanceToSend.denom };
 
 		try {
-			setIsSending(true)
+			setIsSending(true);
 			if (isIbc) {
+				// Time out after 60 seconds from now
+				const timeoutTimestamp = Math.floor(Date.now() / 1000) + 60;
 				const sendResponse = await signingClient.sendIbcTokens(
 					walletAccount.address,
 					destinationAddress,
 					transferAmount,
 					'transfer',
 					channelId,
-					{
-						revisionHeight: '20',
-						revisionNumber: '20'
-					},
-					0,
+					undefined,
+					timeoutTimestamp,
 					fee
 				);
 				if (sendResponse.code === 0) {
 					toast.success('Successfully sent IBC tokens!');
 					setBalanceToSend(undefined);
 				} else {
-					toast.error('Error sending IBC Tokens', sendResponse.rawLog);
+					toast.error(`Error sending IBC Tokens ${sendResponse.rawLog}`);
 				}
 			} else {
 				const sendResponse = await signingClient.sendTokens(walletAccount.address, destinationAddress, [transferAmount], fee);
@@ -58,13 +54,13 @@ const SendTokens = ({seiWallet}: SendTokensProps) => {
 					toast.success('Successfully sent tokens!');
 					setBalanceToSend(undefined);
 				} else {
-					toast.error('Error sending Tokens', sendResponse.rawLog);
+					toast.error(`Error sending Tokens ${sendResponse.rawLog}`);
 				}
 			}
-			setIsSending(false)
+			setIsSending(false);
 		} catch (e: any) {
 			toast.error(e.message);
-			setIsSending(false)
+			setIsSending(false);
 		}
 	};
 
@@ -75,7 +71,7 @@ const SendTokens = ({seiWallet}: SendTokensProps) => {
 				<div className='cardContent'>
 					<div className='labelInput'>
 						<p className='label'>denom:</p>
-						<input className='input' disabled={true} value={balanceToSend.denom}/>
+						<input className='input' disabled={true} value={balanceToSend.denom} />
 					</div>
 					<div className='labelInput'>
 						<p className='label'>amount:</p>
