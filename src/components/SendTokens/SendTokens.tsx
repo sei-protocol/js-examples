@@ -19,7 +19,7 @@ const SendTokens = () => {
 
 	if (!balanceToSend) return null;
 
-	const isIbc = balanceToSend.denom.startsWith('ibc/');
+	const isIbc = destinationAddress.length > 3 && !destinationAddress.startsWith('sei');
 
 	const onClickSend = async () => {
 		if (!walletAccount || !signingClient) return;
