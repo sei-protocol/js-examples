@@ -34,6 +34,13 @@ const ChainInfo = () => {
 					case 'leap':
 						window.open('https://www.leapwallet.io/', '_blank');
 						return;
+					case 'coin98':
+						window.open('https://coin98.com/wallet', '_blank');
+						return;
+					case 'falcon':
+						window.open('https://www.falconwallet.app', '_blank');
+						return;
+
 				}
 			}
 		};
