@@ -642,10 +642,10 @@
   resolved "https://registry.npmjs.org/@protobufjs/utf8/-/utf8-1.1.0.tgz#a777360b5b39a1a2e5106f8e858f2fd2d060c570"
   integrity sha512-Vvn3zZrhQZkkBE8LSuW3em98c0FwgO4nxzv6OdSxPKJIEKY2bGbHn+mhGIPerzI4twdxaP8/0+06HBpwf345Lw==
 
-"@sei-js/core@0.0.0-internal-20230308004747":
-  version "0.0.0-internal-20230308004747"
-  resolved "https://registry.yarnpkg.com/@sei-js/core/-/core-0.0.0-internal-20230308004747.tgz#d8ac2ce89010f9deaf24e84b0972f072472d3672"
-  integrity sha512-Jhw3BFecXgZExCjs+3h1ux/0lMBwMQuLGG2zGNSFcmBG0uDXuvBnnWAuhrKtEw3YrwJE/7xgH/086iYKA8uaGw==
+"@sei-js/core@1.3.0":
+  version "1.3.0"
+  resolved "https://registry.npmjs.org/@sei-js/core/-/core-1.3.0.tgz#8e8724dd8c9a5cd9eaa0c8c168d2a196473b5b12"
+  integrity sha512-DIt8eXufDtMFoyJlbJ0ugKNHXwL/YSybMFYt5Lpy3ZmtfwV2ufNJkG7NXOYw6gF85kDLDC+dVzhj+L4ZlzUcnA==
   dependencies:
     "@cosmjs/cosmwasm-stargate" "^0.29.5"
     "@cosmjs/encoding" "0.29.5"
@@ -656,14 +656,14 @@
     "@cosmjs/tendermint-rpc" "0.29.5"
     "@cosmjs/utils" "0.29.5"
     "@keplr-wallet/types" "^0.11.41"
-    "@sei-js/proto" "0.0.0-internal-20230308004747"
+    "@sei-js/proto" "1.2.0"
     readonly-date "^1.0.0"
     xstream "^11.14.0"
 
-"@sei-js/proto@0.0.0-internal-20230308004747":
-  version "0.0.0-internal-20230308004747"
-  resolved "https://registry.yarnpkg.com/@sei-js/proto/-/proto-0.0.0-internal-20230308004747.tgz#6902a858cbecf2e711cafc5be155273a296b8902"
-  integrity sha512-OdnUmLv3Tz2xCKavM9NweiF/c6J5pbFCobbz57lpthurAmjQK41zaFfeJBRPwm1crfcrkuMlTnlaKudMDntcEg==
+"@sei-js/proto@1.2.0":
+  version "1.2.0"
+  resolved "https://registry.npmjs.org/@sei-js/proto/-/proto-1.2.0.tgz#86374a78d2b2c09f08a4c0997c890b6e0c5542a4"
+  integrity sha512-gN+xToncmpGSF9WzabTXuXBbxPKear3AnqmT4vjrtYHzjZMY9sawL+7Y15/c8p2eKA4NNtCWuhw3RtwaDk3Ziw==
   dependencies:
     "@babel/runtime" "^7.18.9"
     "@cosmjs/amino" "0.29.5"
@@ -675,12 +675,12 @@
     "@osmonauts/lcd" "^0.8.0"
     protobufjs "^6.11.2"
 
-"@sei-js/react@^0.0.0-internal-20230308004747":
-  version "0.0.0-internal-20230308004747"
-  resolved "https://registry.yarnpkg.com/@sei-js/react/-/react-0.0.0-internal-20230308004747.tgz#a534794676d7f6c0fb6b364aefdbb967fa987ce4"
-  integrity sha512-zHgB8AumiXevq732NT9qC4OolqnJAZeePVZDVJZ/G/QxGDFAIbBBIYWnMB+Eb60O4AHoGsHRaZm7u/L2HHXM1g==
+"@sei-js/react@^1.2.1":
+  version "1.2.1"
+  resolved "https://registry.npmjs.org/@sei-js/react/-/react-1.2.1.tgz#ffb8a5b4f3b86c9ff51faf29402dafca9bed64e0"
+  integrity sha512-lCZ4U91//EK4Sw46FEvUMC2x7VHUUKBe2H6jo6DRPw1+YmYDcJD+md5ptEaaWCZ3iydr3PTx8NW6AVYWyxkRAA==
   dependencies:
-    "@sei-js/core" "0.0.0-internal-20230308004747"
+    "@sei-js/core" "1.3.0"
     react "18.2.0"
     react-dom "18.2.0"
     react-outside-click-handler "^1.3.0"
