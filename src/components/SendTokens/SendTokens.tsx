@@ -44,7 +44,7 @@ const SendTokens = () => {
 					fee
 				);
 				if (sendResponse.code === 0) {
-					toast.success('Successfully sent IBC tokens!');
+					toast.success('Successfully sent IBC tokens!', { toastId: 'ibc-success' });
 					setBalanceToSend(undefined);
 				} else {
 					toast.error(`Error sending IBC Tokens ${sendResponse.rawLog}`);
@@ -52,7 +52,7 @@ const SendTokens = () => {
 			} else {
 				const sendResponse = await signingClient.sendTokens(walletAccount.address, destinationAddress, [transferAmount], fee);
 				if (sendResponse.code === 0) {
-					toast.success('Successfully sent tokens!');
+					toast.success('Successfully sent tokens!', { toastId: 'send-success' });
 					setBalanceToSend(undefined);
 				} else {
 					toast.error(`Error sending Tokens ${sendResponse.rawLog}`);

@@ -34,7 +34,6 @@ h3,
 h4,
 h5,
 h6,
-span,
 a,
 div {
 	color: var(--text-color);
@@ -85,7 +84,9 @@ input {
 .appContent {
 	flex: 1;
 	width: 100%;
-	padding: 24px 12px;
+	padding: 2rem;
 	align-items: center;
+	gap: 2rem;
+	overflow-y: auto;
 }
 

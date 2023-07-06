@@ -2,14 +2,14 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { IoCopySharp, IoSendSharp } from 'react-icons/io5';
 import { toast } from 'react-toastify';
 import { useSetRecoilState } from 'recoil';
-import { useQueryClient, useWallet } from '@sei-js/react';
+import { useQueryClient, useWallet, WalletConnectButton } from '@sei-js/react';
 
 import { BalanceResponseType } from '../../types';
 import { balanceToSendAtom } from '../../recoil';
 import './styles.css';
 
 const AccountInfo = () => {
-	const { offlineSigner, accounts } = useWallet();
+	const { connectedWallet, offlineSigner, accounts } = useWallet();
 	const { queryClient } = useQueryClient();
 	const setBalanceToSend = useSetRecoilState(balanceToSendAtom);
 
@@ -57,15 +57,23 @@ const AccountInfo = () => {
 		navigator.clipboard.writeText(walletAccount?.address || '').then();
 	};
 
+	const renderContent = () => {
+		if(!connectedWallet) return null;
+
+		return (
+			<div className='tokens'>{renderBalances()}</div>
+		);
+	};
+
+
 	return (
 		<div className='card'>
-			<h3 className='sectionHeader'>Account info</h3>
+			<h3 className='sectionHeader'>Wallet and accounts</h3>
 			<div className='cardContent'>
-				<div className='addressWrapper'>
-					<p className='accountAddress'>{walletAccount?.address || 'No account found!'}</p>
-					<IoCopySharp className='copy' onClick={onClickCopy} />
+				<div className="buttonWrapper">
+					<WalletConnectButton buttonClassName="walletButton"/>
 				</div>
-				<div className='tokens'>{renderBalances()}</div>
+				{renderContent()}
 			</div>
 		</div>
 	);

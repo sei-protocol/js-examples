@@ -1,13 +1,14 @@
 .card {
+    flex-direction: column;
     align-items: flex-start;
     border: var(--white-12) solid 2px;
     background-color: var(--white-6);
     flex: 0;
     max-width: 100%;
     width: 960px;
-    border-radius: 3px;
-    margin-bottom: 24px;
-    padding: 12px;
+    border-radius: 2rem;
+    padding: 2rem;
+    gap: 1rem;
 }
 
 .card:last-of-type {
@@ -15,14 +16,15 @@
 }
 
 .cardContent {
-    padding: 12px 0;
     width: 100%;
+    gap: 1rem;
+    margin-top: 1rem;
 }
 
 .dropdown {
     margin: 12px 24px 12px 0;
     height: 40px;
-    width: 120px;
+    width: 360px;
 }
 
 .Dropdown-control {
@@ -40,10 +42,9 @@
     flex-direction: row;
     align-items: center;
     font-weight: 500;
-    padding: 12px;
+    padding: 0.5rem 1rem;
     background-color: var(--white-12);
     border-radius: 6px;
-    margin: 12px 0;
     width: 100%;
 }
 
@@ -53,7 +54,7 @@
     white-space: nowrap;
     margin-right: 12px;
     width: 96px;
-    min-width: 96px;
+    min-width: fit-content;
 }
 
 .input {
@@ -78,8 +79,7 @@
 
 .sectionHeader {
     width: 100%;
-    padding-bottom: 12px;
-    border-bottom: var(--white-12) solid 1px;
+    font-size: 1.5rem;
 }
 
 .Toastify__toast-body {
@@ -88,4 +88,41 @@
 
 .Toastify__close-button {
     display: none;
+}
+
+.buttonWrapper {
+    width: fit-content;
+}
+
+.wallet__menu--item {
+    flex-direction: row;
+    color: black;
+}
+
+.walletButton {
+    flex-direction: row;
+    background-color: var(--white-80);
+    color: var(--background-color);
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    width: 240px;
+    padding: 0.5rem 1rem;
+    height: 40px;
+    margin-right: 12px;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 13pt;
+    transition: 250ms all ease-out;
+}
+
+.walletButton:hover {
+    opacity: 0.8;
+}
+
+.walletButton:last-of-type {
+    margin-right: 0;
 }

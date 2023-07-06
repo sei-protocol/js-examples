@@ -60,6 +60,7 @@
 	flex: 1;
 	color: white;
 	padding: 12px;
+	word-break: break-word;
 }
 
 .tokenAmount {
@@ -68,6 +69,7 @@
 	min-width: 132px;
 	color: white;
 	padding: 12px;
+	word-break: break-word;
 }
 
 .icon {

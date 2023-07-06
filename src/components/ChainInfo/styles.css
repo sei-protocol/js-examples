@@ -2,6 +2,11 @@
     flex-direction: row;
     align-items: center;
     width: 100%;
+    gap: 2rem;
+}
+
+.infoHeader--title {
+    color: #f1f1f188
 }
 
 .connect {
@@ -9,32 +14,6 @@
     align-items: center;
     width: 100%;
     margin-top: 12px;
-}
-
-.walletButton {
-    flex-direction: row;
-    background-color: var(--white-80);
-    color: var(--background-color);
-    align-items: center;
-    justify-content: center;
-    flex: 1;
-    height: 40px;
-    margin-right: 12px;
-    border: none;
-    outline: none;
-    cursor: pointer;
-    border-radius: 6px;
-    font-weight: 600;
-    font-size: 13pt;
-    transition: 250ms all ease-out;
-}
-
-.walletButton:hover {
-    opacity: 0.8;
-}
-
-.walletButton:last-of-type {
-    margin-right: 0;
 }
 
 .connectedIcon {
