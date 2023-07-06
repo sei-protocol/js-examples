@@ -138,7 +138,7 @@ const WasmModule = () => {
 					<p className='label'>funds:</p>
 					<input
 						autoFocus={true}
-						placeholder={JSON.parse('[{"denom": "usei", "amount": "100"}]')}
+						placeholder={'[{"denom": "usei", "amount": "100"}]'}
 						className='input'
 						value={funds}
 						onChange={(e) => setFunds(e.target.value)}
