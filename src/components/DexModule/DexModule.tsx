@@ -45,7 +45,7 @@ const DexModule = () => {
 					setResponse(await queryClient.seiprotocol.seichain.dex.getMarketSummary(marketSummaryQuery));
 					return;
 			}
-		} catch (e) {
+		} catch (e: any) {
 			setResponse({ error: e.message })
 		}
 	}, [queryClient, queryType]);
