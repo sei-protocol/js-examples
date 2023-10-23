@@ -3,8 +3,7 @@ import { WalletInfoProps } from './types';
 import styles from './WalletVerificaton.module.sass';
 import { useWallet, WalletConnectButton } from '@sei-js/react';
 import CodeExecute from '../CodeExecute/CodeExecute';
-import { WalletReleaseTest } from './WalletReleaseTest';
-import { SIGN_ARBITRARY_TEXT, useWalletTests } from './hooks/useWalletTests';
+import { SIGN_ARBITRARY_TEXT, useWalletTests } from './hooks';
 
 
 const WalletVerification = ({}: WalletInfoProps) => {
@@ -77,7 +76,6 @@ const WalletVerification = ({}: WalletInfoProps) => {
 				<p className={styles.pageDescription}>Verify your wallet connection is configured properly</p>
 			</div>
 			<div className='cardContent'>
-				<WalletReleaseTest />
 				{renderContent()}
 			</div>
 		</div>
