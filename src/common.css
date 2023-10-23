@@ -1,12 +1,9 @@
 .card {
     flex-direction: column;
     align-items: flex-start;
-    border: var(--white-12) solid 2px;
-    background-color: var(--white-6);
-    flex: 0;
-    max-width: 100%;
-    width: 960px;
-    border-radius: 2rem;
+    background-color: var(--white-1);
+    flex: 1;
+    width: 100%;
     padding: 2rem;
     gap: 1rem;
 }
@@ -17,7 +14,7 @@
 
 .cardContent {
     width: 100%;
-    gap: 1rem;
+    gap: 2rem;
     margin-top: 1rem;
 }
 
@@ -42,19 +39,16 @@
     flex-direction: row;
     align-items: center;
     font-weight: 500;
-    padding: 0.5rem 1rem;
+    padding: 1rem 1.5rem;
     background-color: var(--white-12);
     border-radius: 6px;
     width: 100%;
+    gap: 1rem;
 }
 
 .label {
-    color: var(--input-placeholder);
-    flex: 0;
-    white-space: nowrap;
-    margin-right: 12px;
-    width: 96px;
-    min-width: fit-content;
+    font-size: 1.25rem;
+    color: #f1f1f188;
 }
 
 .input {
@@ -63,7 +57,7 @@
     border: none;
     outline: none;
     flex: 1;
-    font-size: 18px;
+    font-size: 1.25rem;
 }
 
 .input:hover, .input:active, .input:focus {
@@ -105,17 +99,16 @@
     color: var(--background-color);
     align-items: center;
     justify-content: center;
-    flex: 1;
-    width: 240px;
+    width: 140px;
     padding: 0.5rem 1rem;
-    height: 40px;
     margin-right: 12px;
     border: none;
+    white-space: nowrap;
     outline: none;
     cursor: pointer;
     border-radius: 6px;
     font-weight: 600;
-    font-size: 13pt;
+    font-size: 1rem;
     transition: 250ms all ease-out;
 }
 

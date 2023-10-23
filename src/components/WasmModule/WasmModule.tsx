@@ -2,13 +2,12 @@ import React, { useState } from 'react';
 import './styles.css';
 import { useSigningCosmWasmClient, useWallet } from '@sei-js/react';
 import { calculateFee } from '@cosmjs/stargate';
-import { toast } from 'react-toastify';
 import ReactJson from 'react-json-view';
 
 type OptionType = "query" | "execute";
 
 const WasmModule = () => {
-	const { accounts, connectedWallet } = useWallet();
+	const { accounts } = useWallet();
 
 	const [response, setResponse] = useState<object>();
 	const [memo, setMemo] = useState('');
@@ -19,9 +18,7 @@ const WasmModule = () => {
 	const [contractMessage, setContractMessage] = useState('');
 	const [selectedOption, setSelectedOption] = useState<OptionType>("query");
 
-	const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-		setSelectedOption(e.target.value as OptionType);
-	};
+	const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => setSelectedOption(e.target.value as OptionType);
 
 	const { signingCosmWasmClient } = useSigningCosmWasmClient();
 
@@ -48,8 +45,6 @@ const WasmModule = () => {
 			return '{"mint": {}}'
 		}
 	}
-
-	if(!connectedWallet) return null
 
 	return <div className='card'>
 		<h3 className='sectionHeader'>Wasm module</h3>

@@ -2,10 +2,12 @@ import React from 'react';
 import { useRecoilState } from 'recoil';
 import Dropdown from 'react-dropdown';
 import { useWallet } from '@sei-js/react';
+import styles from './ChainInfo.module.sass';
 
-import { selectedChainConfigAtom, customChainIdAtom, customRestUrlAtom, customRpcUrlAtom } from '../../recoil';
+import { customChainIdAtom, customRestUrlAtom, customRpcUrlAtom, selectedChainConfigAtom } from '../../recoil';
 import './styles.css';
 import { DEFAULT_CHAINS } from '../../config/chains';
+import CodeExecute from '../CodeExecute/CodeExecute';
 
 const ChainInfo = () => {
 	const wallet = useWallet();
@@ -18,9 +20,18 @@ const ChainInfo = () => {
 
 	const { chainId, restUrl, rpcUrl } = wallet;
 
+	const exampleCodeText = `
+<SeiWalletProvider chainConfiguration={{ chainId: '${chainId}', rpcUrl: '${rpcUrl}', restUrl: '${restUrl}' }} wallets={['compass', 'fin', 'keplr']}>
+	<YourApp />
+</SeiWalletProvider>
+`;
+
 	return (
 		<div className='card'>
-			<h3 className='sectionHeader'>Chain configuration</h3>
+			<div>
+				<p className={styles.pageTitle}>Chain configuration</p>
+				<p className={styles.pageDescription}>Set up the connection used throughout this app</p>
+			</div>
 			<div className='infoHeader'>
 				<h3 className='infoHeader--title'>Select a preset</h3>
 				<Dropdown
@@ -66,6 +77,7 @@ const ChainInfo = () => {
 					onChange={(e) => setCustomRpcUrl(e.target.value)}
 				/>
 			</div>
+			<CodeExecute text={exampleCodeText} title={'REACT CONFIGURATION EXAMPLE'}/>
 		</div>
 	);
 };

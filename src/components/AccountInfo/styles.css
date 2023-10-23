@@ -41,19 +41,17 @@
 
 .tokens {
 	width: 100%;
+	border-radius: 1rem;
+	overflow: hidden;
+	background-color: var(--background-color);
+	border: var(--white-48) solid 1px;
 }
 
 .tokenRow {
 	flex-direction: row;
 	justify-content: space-between;
 	align-items: center;
-	border-bottom: var(--white-48) solid 1px;
-	border-right: var(--white-48) solid 1px;
-	border-left: var(--white-48) solid 1px;
-}
-
-.tokenRow:first-of-type {
-	border-top: var(--white-48) solid 1px;
+	background-color: var(--white-6);
 }
 
 .tokenDenom {

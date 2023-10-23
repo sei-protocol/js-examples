@@ -58,6 +58,8 @@ input {
 	--dark-grey: #343434;
 	--red: #ff6666;
 	--green: #9de187;
+	--white-1: rgba(239, 239, 239, 0.01);
+	--white-3: rgba(239, 239, 239, 0.03);
 	--white-6: rgba(239, 239, 239, 0.06);
 	--white-12: rgba(239, 239, 239, 0.12);
 	--white-24: rgba(239, 239, 239, 0.24);
@@ -74,19 +76,12 @@ input {
 }
 
 .appHeader {
-	justify-content: center;
+	flex-direction: row;
+	justify-content: space-between;
 	align-items: center;
 	height: 64px;
 	background-color: var(--white-12);
 	width: 100%;
-}
-
-.appContent {
-	flex: 1;
-	width: 100%;
-	padding: 2rem;
-	align-items: center;
-	gap: 2rem;
-	overflow-y: auto;
+	padding: 1rem;
 }
 

@@ -5,7 +5,7 @@ import Dropdown from 'react-dropdown';
 import ReactJson from 'react-json-view';
 
 const DexModule = () => {
-	const { accounts, connectedWallet } = useWallet();
+	const { accounts } = useWallet();
 	const { queryClient } = useQueryClient();
 
 	const [response, setResponse] = useState<object>();
@@ -54,8 +54,6 @@ const DexModule = () => {
 		queryContract().then();
 	}, [queryClient, contractAddress, queryType]);
 
-	if(!connectedWallet) return null
-
 	return <div className='card'>
 		<h3 className='sectionHeader'>Dex module</h3>
 		<div className='cardContent'>
@@ -63,7 +61,7 @@ const DexModule = () => {
 				<p className='label'>contract address:</p>
 				<input
 					autoFocus={true}
-					placeholder='Contract address...'
+					placeholder='enter a dex contract address...'
 					className='input'
 					value={contractAddress}
 					onChange={(e) => setContractAddress(e.target.value)}

@@ -9,23 +9,28 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@sei-js/core": "^1.4.0",
-    "@sei-js/proto": "^1.2.0",
-    "@sei-js/react": "^2.0.2",
+    "@sei-js/core": "^3.1.0",
+    "@sei-js/proto": "^3.1.0",
+    "@sei-js/react": "^3.1.0",
+    "classnames": "^2.3.2",
+    "crypto-browserify": "^3.12.0",
     "react": "^18.2.0",
+    "react-code-blocks": "^0.1.4",
     "react-dom": "^18.2.0",
     "react-dropdown": "^1.11.0",
     "react-icons": "^4.6.0",
     "react-json-view": "^1.21.3",
     "react-toastify": "^9.1.1",
-    "recoil": "^0.7.6"
+    "recoil": "^0.7.6",
+    "sass": "^1.63.6"
   },
   "devDependencies": {
     "@types/react": "^18.0.22",
     "@types/react-dom": "^18.0.7",
     "@vitejs/plugin-react": "^2.2.0",
-    "prettier": "^2.7.1",
+    "dotenv": "^16.3.1",
+    "prettier": "^3.0.3",
     "typescript": "^4.6.4",
-    "vite": "^3.2.0"
+    "vite": "^4.4.11"
   }
 }
