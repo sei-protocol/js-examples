@@ -25,6 +25,8 @@ const WalletReleaseTest = ({}: WalletReleaseTestProps) => {
 
 	if(!connectedWallet) return null;
 
+	const version = window?.[connectedWallet?.walletInfo?.windowKey]?.version;
+
 	const onClickTest = async () => {
 		if (!connectedWallet || testingAll) return;
 		setTestingAll(true);
@@ -40,7 +42,7 @@ const WalletReleaseTest = ({}: WalletReleaseTestProps) => {
 			return;
 		}
 
-		const obj = { version: window[connectedWallet.walletInfo.windowKey].version, name: connectedWallet.walletInfo.name };
+		const obj = { version, name: connectedWallet.walletInfo.name };
 
 		setVerificationSignature(await signObject(obj));
 		setTestingAll(false);
@@ -50,7 +52,7 @@ const WalletReleaseTest = ({}: WalletReleaseTestProps) => {
 		<div className={styles.content}>
 			<div className={styles.fullTestAction}>
 				<AiFillPlayCircle onClick={onClickTest} />
-				{verificationSignature ? <p className={styles.success}>Verified!</p> : <p>Verify all</p>}
+				{verificationSignature ? <p className={styles.success}>Verified {connectedWallet.walletInfo.name} version {version}</p> : <p>Verify all</p>}
 			</div>
 			<p>{verificationSignature}</p>
 		</div>
