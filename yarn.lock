@@ -535,6 +535,11 @@
   resolved "https://registry.npmjs.org/@emotion/unitless/-/unitless-0.8.1.tgz#182b5a4704ef8ad91bde93f7a860a88fd92c79a3"
   integrity sha512-KOEGMu6dmJZtpadb476IsZBclKvILjopjUii3V+7MnXIQCYh8W3NgNcgwo21n9LXZX6EDIKvqfjYxXebDwxKmQ==
 
+"@esbuild-plugins/node-globals-polyfill@^0.2.3":
+  version "0.2.3"
+  resolved "https://registry.npmjs.org/@esbuild-plugins/node-globals-polyfill/-/node-globals-polyfill-0.2.3.tgz#0e4497a2b53c9e9485e149bc92ddb228438d6bcf"
+  integrity sha512-r3MIryXDeXDOZh7ih1l/yE9ZLORCd5e8vWg02azWRGj5SPTuoh69A2AIyn0Z31V/kHBfZ4HgWJ+OK3GTTwLmnw==
+
 "@esbuild/android-arm64@0.18.20":
   version "0.18.20"
   resolved "https://registry.npmjs.org/@esbuild/android-arm64/-/android-arm64-0.18.20.tgz#984b4f9c8d0377443cc2dfcef266d02244593622"
@@ -798,10 +803,10 @@
   resolved "https://registry.npmjs.org/@react-icons/all-files/-/all-files-4.1.0.tgz#477284873a0821928224b6fc84c62d2534d6650b"
   integrity sha512-hxBI2UOuVaI3O/BhQfhtb4kcGn9ft12RWAFVMUeNjqqhLsHvFtzIkFaptBJpFDANTKoDfdVoHTKZDlwKCACbMQ==
 
-"@sei-js/core@3.1.0", "@sei-js/core@^3.1.0":
-  version "3.1.0"
-  resolved "https://registry.npmjs.org/@sei-js/core/-/core-3.1.0.tgz#a0342fa487fc650502b18a06182afa3ce511c02e"
-  integrity sha512-M3O49ZvjwpHM92sYjUdqIpHW+RogH7abojteS0eR4S1ZXYspeJfMMei/+4Oe8kZnOdXd5MadDEqr8C2SAMquHQ==
+"@sei-js/core@0.0.0-internal-20231210032642", "@sei-js/core@^0.0.0-internal-20231210032642":
+  version "0.0.0-internal-20231210032642"
+  resolved "https://registry.npmjs.org/@sei-js/core/-/core-0.0.0-internal-20231210032642.tgz#c6aab69f88ae5e0c6a64e51f052fae8e7155158f"
+  integrity sha512-k17PxzpItlHg9b8DKYYLcXBsycfxsDcdkH1g8EPEbXZuuZKkuxCIgzH6GlllXb7c15JsAp+Gx6jhcnM73WshXQ==
   dependencies:
     "@cosmjs/amino" "^0.29.5"
     "@cosmjs/cosmwasm-stargate" "^0.29.5"
@@ -816,8 +821,8 @@
     "@ethersproject/keccak256" "^5.7.0"
     "@keplr-wallet/types" "^0.11.41"
     "@sei-js/proto" "^3.1.0"
+    bech32 "^2.0.0"
     buffer "^6.0.3"
-    crypto-js "^4.1.1"
     elliptic "^6.5.4"
     process "^0.11.10"
     readonly-date "^1.0.0"
@@ -839,15 +844,16 @@
     "@osmonauts/lcd" "^0.8.0"
     protobufjs "^6.11.2"
 
-"@sei-js/react@^3.1.0":
-  version "3.1.0"
-  resolved "https://registry.npmjs.org/@sei-js/react/-/react-3.1.0.tgz#67c535a985eaa459d0d9b15d41ab4eb6e0e7f0e9"
-  integrity sha512-BbOk6SA242lG6k1Zhu9vPexh90HwORRiZD0xStbQtEgrr0XbcSA3OgbuLa6Rt6aeYhZZExtlg+bpa6GWz+JY8w==
+"@sei-js/react@^0.0.0-internal-20231210032642":
+  version "0.0.0-internal-20231210032642"
+  resolved "https://registry.npmjs.org/@sei-js/react/-/react-0.0.0-internal-20231210032642.tgz#f8789011c12ecabe2e29654f6383ae573b4e23d2"
+  integrity sha512-4tAd52OaSwwRdbz1a3xQn10iGsyZgXRzn86e+t/KFjZpiF2ZdTNhL+P3M+rrQs/AC6W/2f24ZZAowvasZ97EfA==
   dependencies:
     "@react-icons/all-files" "^4.1.0"
-    "@sei-js/core" "3.1.0"
+    "@sei-js/core" "0.0.0-internal-20231210032642"
     buffer "^6.0.3"
     process "^0.11.10"
+    styled-components "^6.1.1"
 
 "@types/hast@^2.0.0":
   version "2.3.6"
@@ -986,6 +992,11 @@ bech32@^1.1.4:
   version "1.1.4"
   resolved "https://registry.npmjs.org/bech32/-/bech32-1.1.4.tgz#e38c9f37bf179b8eb16ae3a772b40c356d4832e9"
   integrity sha512-s0IrSOzLlbvX7yp4WBfPITzpAU8sqQcpsmwXDiKwrG4r491vwCO/XpejasRNl0piBMe/DvP4Tz0mIS/X1DPJBQ==
+
+bech32@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.npmjs.org/bech32/-/bech32-2.0.0.tgz#078d3686535075c8c79709f054b1b226a133b355"
+  integrity sha512-LcknSilhIGatDAsY1ak2I8VtGaHNhgMSYVxFrGLXv+xLHytaKZKcaUJJUE7qmBr7h33o5YQwP55pMI0xmkpJwg==
 
 binary-extensions@^2.0.0:
   version "2.2.0"
@@ -1265,11 +1276,6 @@ crypto-browserify@^3.12.0:
     public-encrypt "^4.0.0"
     randombytes "^2.0.0"
     randomfill "^1.0.3"
-
-crypto-js@^4.1.1:
-  version "4.1.1"
-  resolved "https://registry.npmjs.org/crypto-js/-/crypto-js-4.1.1.tgz#9e485bcf03521041bd85844786b83fb7619736cf"
-  integrity sha512-o2JlM7ydqd3Qk9CA0L4NL6mTzU2sdx96a+oOfPu8Mkl/PK51vSyoi8/rQ8NknZtk44vq15lmhAj9CIAGwgeWKw==
 
 css-color-keywords@^1.0.0:
   version "1.0.0"
@@ -2188,6 +2194,21 @@ styled-components@^6.0.5:
   version "6.1.0"
   resolved "https://registry.npmjs.org/styled-components/-/styled-components-6.1.0.tgz#228e3ab9c1ee1daa4b0a06aae30df0ed14fda274"
   integrity sha512-VWNfYYBuXzuLS/QYEeoPgMErP26WL+dX9//rEh80B2mmlS1yRxRxuL5eax4m6ybYEUoHWlTy2XOU32767mlMkg==
+  dependencies:
+    "@emotion/is-prop-valid" "^1.2.1"
+    "@emotion/unitless" "^0.8.0"
+    "@types/stylis" "^4.0.2"
+    css-to-react-native "^3.2.0"
+    csstype "^3.1.2"
+    postcss "^8.4.31"
+    shallowequal "^1.1.0"
+    stylis "^4.3.0"
+    tslib "^2.5.0"
+
+styled-components@^6.1.1:
+  version "6.1.1"
+  resolved "https://registry.npmjs.org/styled-components/-/styled-components-6.1.1.tgz#a5414ada07fb1c17b96a26a05369daa4e2ad55e5"
+  integrity sha512-cpZZP5RrKRIClBW5Eby4JM1wElLVP4NQrJbJ0h10TidTyJf4SIIwa3zLXOoPb4gJi8MsJ8mjq5mu2IrEhZIAcQ==
   dependencies:
     "@emotion/is-prop-valid" "^1.2.1"
     "@emotion/unitless" "^0.8.0"

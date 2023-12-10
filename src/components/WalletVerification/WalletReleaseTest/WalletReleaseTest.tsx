@@ -4,7 +4,7 @@ import styles from './WalletReleaseTest.module.sass';
 import { AiFillPlayCircle } from 'react-icons/all';
 import { useWallet } from '@sei-js/react';
 import { signObject } from '../verify';
-import { useWalletTests } from '../hooks/useWalletTests';
+import { useWalletTests } from '../hooks';
 
 const WalletReleaseTest = ({}: WalletReleaseTestProps) => {
 	const { connectedWallet } = useWallet();

@@ -3,7 +3,6 @@ import { RecoilRoot } from 'recoil';
 import { ToastContainer } from 'react-toastify';
 import 'react-dropdown/style.css';
 import 'react-toastify/dist/ReactToastify.css';
-
 import SeiExample from './SeiExample';
 
 function App() {

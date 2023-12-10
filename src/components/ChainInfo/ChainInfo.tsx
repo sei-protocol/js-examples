@@ -28,7 +28,7 @@ const ChainInfo = () => {
 
 	return (
 		<div className='card'>
-			<div>
+			<div className={styles.header}>
 				<p className={styles.pageTitle}>Chain configuration</p>
 				<p className={styles.pageDescription}>Set up the connection used throughout this app</p>
 			</div>

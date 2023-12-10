@@ -72,7 +72,7 @@ const WalletVerification = ({}: WalletInfoProps) => {
 
 	return (
 		<div className='card'>
-			<div>
+			<div className={styles.header}>
 				<p className={styles.pageTitle}>Wallet connection</p>
 				<p className={styles.pageDescription}>Verify your wallet connection is configured properly</p>
 			</div>

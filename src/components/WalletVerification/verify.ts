@@ -1,6 +1,7 @@
 const AES_KEY: string = import.meta.env.VITE_WALLET_VERIFICATION_KEY || '';
 const ALGORITHM = 'AES-GCM';
-const STATIC_SALT: Buffer = Buffer.from('wallet-verification', 'utf8');
+// const STATIC_SALT: Buffer = Buffer.from('wallet-verification', 'utf8');
+const STATIC_SALT: Uint8Array = new TextEncoder().encode('wallet-verification');
 const ITERATIONS = 10000; // Number of iterations for PBKDF2, adjust as needed
 
 interface KeyAndIv {

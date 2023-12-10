@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
-import { SeiWalletProvider, WalletConnectButton } from '@sei-js/react';
 import { useRecoilValue } from 'recoil';
 
-import { AccountInfo, ChainInfo, DexModule, SendTokens, WasmModule } from './components';
+import { AccountInfo, ChainInfo, DexModule, MultiSig, SendTokens, WasmModule } from './components';
 import { selectedChainConfigSelector } from './recoil';
 import './common.css';
 import styles from './SeiExample.module.sass';
@@ -13,10 +12,13 @@ import {
 	AppRoute,
 	CHAIN_INFO_ROUTE,
 	DEX_MODULE_ROUTE,
+	MULTI_SIG_ROUTE,
 	WALLET_VERIFICATION_ROUTE,
 	WASM_MODULE_ROUTE
 } from './config';
 import cn from 'classnames';
+import { SeiWalletProvider, WalletConnectButton } from '@sei-js/react';
+import { OKX_WALLET } from '@sei-js/core';
 
 const SeiExample = () => {
 	const selectedChainConfigUrls = useRecoilValue(selectedChainConfigSelector);
@@ -42,11 +44,13 @@ const SeiExample = () => {
 				return <WasmModule />
 			case DEX_MODULE_ROUTE:
 				return <DexModule />
+			case MULTI_SIG_ROUTE:
+				return <MultiSig />
 		}
 	}
 
 	return (
-		<SeiWalletProvider chainConfiguration={selectedChainConfigUrls} wallets={['compass', 'fin', 'keplr' ] }>
+		<SeiWalletProvider chainConfiguration={selectedChainConfigUrls} wallets={['compass', 'fin', 'keplr', OKX_WALLET ] }>
 			<div className='app'>
 				<div className='appHeader'>
 					<div className={styles.headerItem}/>
