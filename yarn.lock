@@ -803,10 +803,10 @@
   resolved "https://registry.npmjs.org/@react-icons/all-files/-/all-files-4.1.0.tgz#477284873a0821928224b6fc84c62d2534d6650b"
   integrity sha512-hxBI2UOuVaI3O/BhQfhtb4kcGn9ft12RWAFVMUeNjqqhLsHvFtzIkFaptBJpFDANTKoDfdVoHTKZDlwKCACbMQ==
 
-"@sei-js/core@0.0.0-internal-20231210032642", "@sei-js/core@^0.0.0-internal-20231210032642":
-  version "0.0.0-internal-20231210032642"
-  resolved "https://registry.npmjs.org/@sei-js/core/-/core-0.0.0-internal-20231210032642.tgz#c6aab69f88ae5e0c6a64e51f052fae8e7155158f"
-  integrity sha512-k17PxzpItlHg9b8DKYYLcXBsycfxsDcdkH1g8EPEbXZuuZKkuxCIgzH6GlllXb7c15JsAp+Gx6jhcnM73WshXQ==
+"@sei-js/core@0.0.0-internal-20231212072337", "@sei-js/core@^0.0.0-internal-20231212072337":
+  version "0.0.0-internal-20231212072337"
+  resolved "https://registry.npmjs.org/@sei-js/core/-/core-0.0.0-internal-20231212072337.tgz#e004c5850a2c94f61ff0072d8348318bfd965e24"
+  integrity sha512-h2w3brvzQ9xBC+EJiLT6OPP8M0DA1oxYHcMuXeyqhbHKZvEH4ww1CaMU20FvKvaWAG+Mzd68IxU98c0V3aQJQw==
   dependencies:
     "@cosmjs/amino" "^0.29.5"
     "@cosmjs/cosmwasm-stargate" "^0.29.5"
@@ -844,13 +844,13 @@
     "@osmonauts/lcd" "^0.8.0"
     protobufjs "^6.11.2"
 
-"@sei-js/react@^0.0.0-internal-20231210032642":
-  version "0.0.0-internal-20231210032642"
-  resolved "https://registry.npmjs.org/@sei-js/react/-/react-0.0.0-internal-20231210032642.tgz#f8789011c12ecabe2e29654f6383ae573b4e23d2"
-  integrity sha512-4tAd52OaSwwRdbz1a3xQn10iGsyZgXRzn86e+t/KFjZpiF2ZdTNhL+P3M+rrQs/AC6W/2f24ZZAowvasZ97EfA==
+"@sei-js/react@^0.0.0-internal-20231212072337":
+  version "0.0.0-internal-20231212072337"
+  resolved "https://registry.npmjs.org/@sei-js/react/-/react-0.0.0-internal-20231212072337.tgz#5cd140dea97866fb4d3b68c17a2d62f74d262a66"
+  integrity sha512-hTsKo4UMGNPhnMEol2SaHnQCdWnUkxi8ybpcvV4wREIlLGPNnjYp+ddv5S60RjeaXVXvjaRLULgsNRSIAj/6hA==
   dependencies:
     "@react-icons/all-files" "^4.1.0"
-    "@sei-js/core" "0.0.0-internal-20231210032642"
+    "@sei-js/core" "0.0.0-internal-20231212072337"
     buffer "^6.0.3"
     process "^0.11.10"
     styled-components "^6.1.1"

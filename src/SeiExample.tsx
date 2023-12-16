@@ -18,7 +18,6 @@ import {
 } from './config';
 import cn from 'classnames';
 import { SeiWalletProvider, WalletConnectButton } from '@sei-js/react';
-import { OKX_WALLET } from '@sei-js/core';
 
 const SeiExample = () => {
 	const selectedChainConfigUrls = useRecoilValue(selectedChainConfigSelector);
@@ -50,7 +49,7 @@ const SeiExample = () => {
 	}
 
 	return (
-		<SeiWalletProvider chainConfiguration={selectedChainConfigUrls} wallets={['compass', 'fin', 'keplr', OKX_WALLET ] }>
+		<SeiWalletProvider chainConfiguration={selectedChainConfigUrls} wallets={['compass', 'fin', 'keplr' ] }>
 			<div className='app'>
 				<div className='appHeader'>
 					<div className={styles.headerItem}/>
