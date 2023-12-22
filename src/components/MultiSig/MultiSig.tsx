@@ -2,11 +2,14 @@ import React, { useState } from 'react';
 import { MultiSigProps } from './types';
 import styles from './MultiSig.module.sass';
 import { Registry } from '@cosmjs/proto-signing';
-import { calculateFee, makeMultisignedTxBytes, StargateClient, defaultRegistryTypes } from '@cosmjs/stargate';
+import { Account, calculateFee, defaultRegistryTypes, makeMultisignedTxBytes, StargateClient } from '@cosmjs/stargate';
 import { cosmos } from '@sei-js/proto';
-import { coin } from '@cosmjs/proto-signing';
 import { isMultisigThresholdPubkey, MultisigThresholdPubkey } from '@cosmjs/amino';
-import { getSigningClient } from '@sei-js/core';
+import { fromBase64, toBase64 } from '@cosmjs/encoding';
+import { getSigningClient, isValidSeiAddress } from '@sei-js/core';
+import { CSVUpload } from './components/CSVUpload';
+import { RecipientAmount } from './components/CSVUpload/types';
+import { useWallet } from '@sei-js/react';
 
 const CHAIN_ID = 'atlantic-2';
 const RPC_URL = 'https://rpc.atlantic-2.seinetwork.io';
@@ -16,6 +19,9 @@ const MultiSig = ({}: MultiSigProps) => {
 	// MultiSig sei18ec4x56fc74rnxgv34mj8uua6dtsxy5dlvfemt exists on atlantic-2 with accounts sei1vmt027ycnv0klf22j8wc3mnudasz370umc3ydq and sei14ae4g3422thcyuxler2ws3w25fpesrh2uqmgm9
 	// https://www.seiscan.app/atlantic-2/accounts/sei18ec4x56fc74rnxgv34mj8uua6dtsxy5dlvfemt/overview
 	// Successfully broadcast multisig transaction from CLI with TX HASH 33F337F989804EEAE6C36C5C6C5A767437F7330B10C97E640D67C5F304F6B748 on atlantic-2
+
+
+	const { connectedWallet, accounts } = useWallet()
 
 	window['compass'].defaultOptions = {
 		sign: {
@@ -34,12 +40,17 @@ const MultiSig = ({}: MultiSigProps) => {
 
 	const registry = new Registry(defaultRegistryTypes);
 
-	const [finAddress, setFinAddress] = useState<any>('sei1vmt027ycnv0klf22j8wc3mnudasz370umc3ydq');
-	const [compassAddress, setCompassAddress] = useState<any>('sei14ae4g3422thcyuxler2ws3w25fpesrh2uqmgm9');
 	const [multiSigAccountAddress, setMultiSigAccountAddress] = useState<string>('sei18ec4x56fc74rnxgv34mj8uua6dtsxy5dlvfemt');
+	const [multiSigAccount, setMultiSigAccount] = useState<Account>();
 
-	const [finSignResponse, setFinSignResponse] = useState<any>();
-	const [compassSignResponse, setCompassSignResponse] = useState<any>();
+	const [previousSignatures, setPreviousSignatures] = useState<any>();
+	const [previousAddresses, setPreviousAddresses] = useState<any>();
+
+	const [parsedRecipients, setParsedRecipients] = useState<RecipientAmount[]>();
+
+	const [signResponseBody, setSignResponseBody] = useState<any>();
+	const [signResponseSignature, setSignResponseSignature] = useState<any>();
+
 	const [broadcastResponse, setBroadcastResponse] = useState<any>();
 
 	const { multiSend, send } = cosmos.bank.v1beta1.MessageComposer.withTypeUrl;
@@ -63,11 +74,19 @@ const MultiSig = ({}: MultiSigProps) => {
 		inputs: inputs,
 		outputs: outputs
 	});
+
 	const bankSendMsg = send({
 		fromAddress: multiSigAccountAddress,
 		toAddress: 'sei1vwda8z8rpwcagd5ks7uqr3lt3cw9464hhswfe7',
 		amount: [{ denom: 'usei', amount: amountToSend.toString() }]
 	});
+
+	const queryMultiSigAccount = async () => {
+		const broadcaster = await StargateClient.connect(RPC_URL);
+		const account = await broadcaster.getAccount(multiSigAccountAddress);
+		setMultiSigAccount(account);
+		console.log(account);
+	}
 
 	const sendMultiSig = async () => {
 		// Fuzio
@@ -79,45 +98,40 @@ const MultiSig = ({}: MultiSigProps) => {
 		// https://github.com/sei-protocol/fuzio-sei-multisig-ui/blob/40d72350db834b284562f81513ab18cffb30e9dd/lib/multisigHelpers.ts#L58
 		const broadcaster = await StargateClient.connect(RPC_URL);
 
-		// const compassOfflineSigner = await window['compass'].getOfflineSignerOnlyAmino(CHAIN_ID);
-		// const compassSigningClient = await getSigningClient(RPC_URL, compassOfflineSigner);
-		// const compassAccount = await compassSigningClient.getAccount(compassAddress);
-
-		// const finOfflineSigner = await window['leap'].getOfflineSignerOnlyAmino(CHAIN_ID);
-		// const finSigningClient = await getSigningClient(RPC_URL, finOfflineSigner);
-		// const finAccount = await finSigningClient.getAccount(finAddress);
-
-		// console.log('compassAccount', compassAccount);
-		// console.log('finAccount', finAccount);
-
-		const multiSigAccountOnChain = await broadcaster.getAccount(multiSigAccountAddress);
-		if (!multiSigAccountOnChain) {
+		if (!multiSigAccount) {
 			console.log('Can not find multi sig account on chain');
 			return;
 		}
 
-		const multiSigPubkey = multiSigAccountOnChain.pubkey as unknown as MultisigThresholdPubkey;
+		const multiSigPubkey = multiSigAccount.pubkey as unknown as MultisigThresholdPubkey;
 
 		if (!isMultisigThresholdPubkey(multiSigPubkey)) {
 			console.log('not a multi-sig threshold pubkey');
 			return;
 		}
 
-		console.log('multiSigAccountOnChain', multiSigAccountOnChain);
+		console.log('multiSigAccountOnChain', multiSigAccount);
 		console.log('multiSignPubKey', multiSigPubkey);
 
-		console.log('finSignResponse', finSignResponse);
-		console.log('compassSignResponse', compassSignResponse);
+		console.log('signResponseBody', signResponseBody);
+		console.log('signResponseSignature', signResponseSignature);
+
+		const currentAccountAddress = accounts[0].address;
+
+
+		const signatures = new Map<string, Uint8Array>([
+			[previousAddresses[0], fromBase64(previousSignatures[0])],
+			[currentAccountAddress, fromBase64(signResponseSignature)],
+		]);
+
+		console.log('signatures', signatures);
 
 		const multiSignedTxBytes = makeMultisignedTxBytes(
 			multiSigPubkey,
-			multiSigAccountOnChain.sequence,
+			multiSigAccount.sequence,
 			TX_FEE,
-			compassSignResponse.bodyBytes,
-			new Map<string, Uint8Array>([
-				[compassAddress, compassSignResponse.signatures[0]],
-				[finAddress, finSignResponse.signatures[0]]
-			])
+			fromBase64(signResponseBody),
+			signatures
 		);
 
 		const result = await broadcaster.broadcastTx(multiSignedTxBytes);
@@ -125,64 +139,96 @@ const MultiSig = ({}: MultiSigProps) => {
 		setBroadcastResponse(result);
 	};
 
-	const signFinTransaction = async () => {
+	const signTransactionForMultiSig = async () => {
 		//Signing in Fuzio
 		// https://github.com/sei-protocol/fuzio-sei-multisig-ui/blob/40d72350db834b284562f81513ab18cffb30e9dd/components/forms/TransactionSigning.tsx#L147
 		// 1.) Get offline signer amino only
 		// 2.) Get signing client
 		// 3.) Sign TX
 		// 4.) Fuzio base 64 encodes signatures[0] and bodyBytes, which get stored in DB and decoded later when making the multisig tx bytes
-		const finOfflineSigner = await window['leap'].getOfflineSignerOnlyAmino(CHAIN_ID);
-		const finAccounts = await finOfflineSigner.getAccounts();
-		const finSigningClient = await getSigningClient(RPC_URL, finOfflineSigner);
-		const response = await finSigningClient.sign(finAccounts[0].address, [bankSendMsg], TX_FEE, '', {
-			accountNumber: 7026164,
-			sequence: 3,
-			chainId: 'atlantic-2'
+		const offlineAminoSigner = await connectedWallet.getOfflineSignerAmino(CHAIN_ID);
+		const signingClient = await getSigningClient(RPC_URL, offlineAminoSigner);
+		const response = await signingClient.sign(accounts[0].address, [bankSendMsg], TX_FEE, '', {
+			accountNumber: multiSigAccount.accountNumber,
+			sequence: multiSigAccount.sequence,
+			chainId: CHAIN_ID
 		});
 		const decoded = registry.decodeTxBody(response.bodyBytes);
 		console.log(decoded);
-		setFinSignResponse(response);
+		setSignResponseBody(toBase64(response.bodyBytes));
+		setSignResponseSignature(toBase64(response.signatures[0]));
 	};
 
-	const signCompassTransaction = async () => {
-		//Signing in Fuzio
-		// https://github.com/sei-protocol/fuzio-sei-multisig-ui/blob/40d72350db834b284562f81513ab18cffb30e9dd/components/forms/TransactionSigning.tsx#L147
-		// 1.) Get offline signer amino only
-		// 2.) Get signing client
-		// 3.) Sign TX
-		// 4.) Fuzio base 64 encodes signatures[0] and bodyBytes, which get stored in DB and decoded later when making the multisig tx bytes
-		const compassOfflineSigner = await window['compass'].getOfflineSignerOnlyAmino(CHAIN_ID);
-		const compassAccounts = await compassOfflineSigner.getAccounts();
-		const compassSigningClient = await getSigningClient(RPC_URL, compassOfflineSigner);
-		const response = await compassSigningClient.sign(compassAccounts[0].address, [bankSendMsg], TX_FEE, '', {
-			accountNumber: 7026164,
-			sequence: 3,
-			chainId: 'atlantic-2'
-		});
-		const decoded = registry.decodeTxBody(response.bodyBytes);
-		console.log(decoded);
-		setCompassSignResponse(response);
-	};
+	const renderMultiSigLookup = () => {
+		if(multiSigAccount) return null;
+
+		return (
+			<div className={styles.card}>
+				<h3>Multi-Sig Account</h3>
+				<input className={styles.input} value={multiSigAccountAddress} onChange={(e) => setMultiSigAccountAddress(e.target.value)} />
+				<button className={styles.button} disabled={!isValidSeiAddress(multiSigAccountAddress)} onClick={queryMultiSigAccount}>look up multi-sig account</button>
+			</div>
+		)
+	}
+
+	const renderUnsignedTx = () => {
+		if(!multiSigAccount) return null;
+
+		if(parsedRecipients) return null;
+
+		return (
+			<div className={styles.card}>
+				<h3>Recipients</h3>
+				<p>Upload a CSV file with format recipient,amount for all the addresses you would like to send to</p>
+				<CSVUpload onParseData={setParsedRecipients} />
+			</div>
+		)
+	}
+
+	const renderSignatureInputs = () => {
+		if(!parsedRecipients) return null;
+
+		return (
+			<div className={styles.card}>
+				<h3>Signatures</h3>
+				<p>This multi-sig requires {multiSigAccount.pubkey.value.threshold} signatures. Please paste the other base64 encoded signatures below</p>
+				{Array.from({ length: multiSigAccount.pubkey.value.threshold - 1 }, (_, index) => (
+					<>
+						<input
+							className={styles.input}
+							key={index}
+							placeholder="Address..."
+							onChange={(e) => setPreviousAddresses({ ...previousAddresses, [index]: e.target.value })}
+						/>
+						<input
+							className={styles.input}
+							key={index}
+							placeholder="Signature..."
+							onChange={(e) => setPreviousSignatures({ ...previousSignatures, [index]: e.target.value })}
+						/>
+					</>
+				))}
+
+				<div>
+					<button className={styles.button} onClick={signTransactionForMultiSig}>sign tx myself</button>
+					{accounts && signResponseSignature && (
+						<>
+							<p>{accounts[0].address}</p>
+							<p>{signResponseSignature}</p>
+						</>
+					)}
+				</div>
+			</div>
+		);
+	}
 
 	const renderContent = () => {
 		return (
 			<div className={styles.content}>
-				<div>
-					<p>MultiSig account address</p>
-					<input className={styles.input} value={multiSigAccountAddress} onChange={(e) => setMultiSigAccountAddress(e.target.value)} />
-				</div>
-				<div>
-					<p>Fin account address</p>
-					<input className={styles.input} value={finAddress} onChange={(e) => setFinAddress(e.target.value)} />
-				</div>
-				<div>
-					<p>Compass account address</p>
-					<input className={styles.input} value={compassAddress} onChange={(e) => setCompassAddress(e.target.value)} />
-				</div>
-				<button onClick={signFinTransaction}>sign tx Fin</button>
-				{finSignResponse && <button onClick={signCompassTransaction}>sign tx Compass</button>}
-				{compassSignResponse && <button onClick={sendMultiSig}>broadcast</button>}
+				{renderMultiSigLookup()}
+				{renderUnsignedTx()}
+				{renderSignatureInputs()}
+				{signResponseSignature && previousSignatures?.[0] && <button className={styles.button} onClick={sendMultiSig}>broadcast</button>}
 
 				{broadcastResponse && (
 					<div>
@@ -212,3 +258,6 @@ export default MultiSig;
 //
 // 4.) Broadcast multisig tx
 // seid tx broadcast signedTx.json --chain-id atlantic-2 --node https://rpc.atlantic-2.seinetwork.io
+
+// sei1vmt027ycnv0klf22j8wc3mnudasz370umc3ydq
+// mimgeaCo5swd38E6I+6TEjlibFuhIEHeKxgM2eRSqBpo5iJ/hH7UXlr8lNb/95UC6CrTiM8RseCTnKr1HQT+UQ==

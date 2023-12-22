@@ -16,6 +16,7 @@
     "@sei-js/react": "^0.0.0-internal-20231212072337",
     "classnames": "^2.3.2",
     "crypto-browserify": "^3.12.0",
+    "papaparse": "^5.4.1",
     "react": "^18.2.0",
     "react-code-blocks": "^0.1.4",
     "react-dom": "^18.2.0",
