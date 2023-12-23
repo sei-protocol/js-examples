@@ -26,15 +26,15 @@ export const DEX_MODULE_ROUTE = {
 }
 
 export const MULTI_SIG_ROUTE = {
-	title: 'Multi Sig',
+	title: 'Multi-Sig MultiSend',
 	route: '/multi-sig',
 }
 
 export const APP_ROUTES: AppRoute[] = [
 	CHAIN_INFO_ROUTE,
+	MULTI_SIG_ROUTE,
 	WALLET_VERIFICATION_ROUTE,
 	ACCOUNT_ROUTE,
 	WASM_MODULE_ROUTE,
 	DEX_MODULE_ROUTE,
-	MULTI_SIG_ROUTE
 ];

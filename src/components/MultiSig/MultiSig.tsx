@@ -1,8 +1,7 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { MultiSigProps } from './types';
 import styles from './MultiSig.module.sass';
-import { Registry } from '@cosmjs/proto-signing';
-import { Account, calculateFee, defaultRegistryTypes, makeMultisignedTxBytes, StargateClient } from '@cosmjs/stargate';
+import { Account, calculateFee, DeliverTxResponse, makeMultisignedTxBytes, StargateClient } from '@cosmjs/stargate';
 import { cosmos } from '@sei-js/proto';
 import { isMultisigThresholdPubkey, MultisigThresholdPubkey } from '@cosmjs/amino';
 import { fromBase64, toBase64 } from '@cosmjs/encoding';
@@ -10,93 +9,50 @@ import { getSigningClient, isValidSeiAddress } from '@sei-js/core';
 import { CSVUpload } from './components/CSVUpload';
 import { RecipientAmount } from './components/CSVUpload/types';
 import { useWallet } from '@sei-js/react';
+import { toast } from 'react-toastify';
+import { FaCopy } from '@react-icons/all-files/fa/FaCopy';
+import { FaPlus } from '@react-icons/all-files/fa/FaPlus';
+import { FaSignature } from '@react-icons/all-files/fa/FaSignature';
 
-const CHAIN_ID = 'atlantic-2';
-const RPC_URL = 'https://rpc.atlantic-2.seinetwork.io';
 const TX_FEE = calculateFee(100000, '0.1usei');
 
 const MultiSig = ({}: MultiSigProps) => {
-	// MultiSig sei18ec4x56fc74rnxgv34mj8uua6dtsxy5dlvfemt exists on atlantic-2 with accounts sei1vmt027ycnv0klf22j8wc3mnudasz370umc3ydq and sei14ae4g3422thcyuxler2ws3w25fpesrh2uqmgm9
-	// https://www.seiscan.app/atlantic-2/accounts/sei18ec4x56fc74rnxgv34mj8uua6dtsxy5dlvfemt/overview
-	// Successfully broadcast multisig transaction from CLI with TX HASH 33F337F989804EEAE6C36C5C6C5A767437F7330B10C97E640D67C5F304F6B748 on atlantic-2
+	const { connectedWallet, accounts, chainId, rpcUrl } = useWallet();
 
-
-	const { connectedWallet, accounts } = useWallet()
-
-	window['compass'].defaultOptions = {
-		sign: {
-			disableBalanceCheck: true,
-			preferNoSetFee: true,
-			preferNoSetMemo: true
-		}
-	};
-	window['leap'].defaultOptions = {
-		sign: {
-			disableBalanceCheck: true,
-			preferNoSetFee: true,
-			preferNoSetMemo: true
-		}
-	};
-
-	const registry = new Registry(defaultRegistryTypes);
-
-	const [multiSigAccountAddress, setMultiSigAccountAddress] = useState<string>('sei18ec4x56fc74rnxgv34mj8uua6dtsxy5dlvfemt');
+	const [multiSigAccountAddress, setMultiSigAccountAddress] = useState<string>('');
 	const [multiSigAccount, setMultiSigAccount] = useState<Account>();
 
-	const [previousSignatures, setPreviousSignatures] = useState<any>();
-	const [previousAddresses, setPreviousAddresses] = useState<any>();
+	const [encodedSignatureInput, setEncodedSignatureInput] = useState<string>();
+	const [previousSignatures, setPreviousSignatures] = useState<string[]>([]);
 
 	const [parsedRecipients, setParsedRecipients] = useState<RecipientAmount[]>();
 
-	const [signResponseBody, setSignResponseBody] = useState<any>();
-	const [signResponseSignature, setSignResponseSignature] = useState<any>();
+	const [broadcastResponse, setBroadcastResponse] = useState<DeliverTxResponse>();
 
-	const [broadcastResponse, setBroadcastResponse] = useState<any>();
-
-	const { multiSend, send } = cosmos.bank.v1beta1.MessageComposer.withTypeUrl;
-
-	const recipientAddresses = ['sei1vwda8z8rpwcagd5ks7uqr3lt3cw9464hhswfe7', 'sei14ae4g3422thcyuxler2ws3w25fpesrh2uqmgm9'];
-	const amountToSend = 10;
-
-	const inputs = [
-		{
-			address: multiSigAccountAddress,
-			coins: [{ denom: 'usei', amount: (amountToSend * recipientAddresses.length).toString() }]
-		}
-	];
-
-	const outputs = recipientAddresses.map((address) => ({
-		address: address,
-		coins: [{ denom: 'usei', amount: amountToSend.toString() }]
-	}));
-
-	const message = multiSend({
-		inputs: inputs,
-		outputs: outputs
-	});
-
-	const bankSendMsg = send({
-		fromAddress: multiSigAccountAddress,
-		toAddress: 'sei1vwda8z8rpwcagd5ks7uqr3lt3cw9464hhswfe7',
-		amount: [{ denom: 'usei', amount: amountToSend.toString() }]
-	});
+	const hasRequiredNumberOfSignatures = useMemo(() => {
+		if (!multiSigAccount) return false;
+		return parseInt(multiSigAccount.pubkey.value.threshold) === previousSignatures.length;
+	}, [multiSigAccount, previousSignatures]);
 
 	const queryMultiSigAccount = async () => {
-		const broadcaster = await StargateClient.connect(RPC_URL);
+		const broadcaster = await StargateClient.connect(rpcUrl);
 		const account = await broadcaster.getAccount(multiSigAccountAddress);
+		if (!account) {
+			toast.info(`The account address you entered does not exists on chain ${chainId}.`);
+			return;
+		}
+
+		const multiSigPubkey = account.pubkey as unknown as MultisigThresholdPubkey;
+
+		if (!isMultisigThresholdPubkey(multiSigPubkey)) {
+			toast.info('The account address you entered is not a multi-sig account that exists on chain.');
+			return;
+		}
 		setMultiSigAccount(account);
-		console.log(account);
-	}
+	};
 
 	const sendMultiSig = async () => {
-		// Fuzio
-		// https://github.com/sei-protocol/fuzio-sei-multisig-ui/blob/40d72350db834b284562f81513ab18cffb30e9dd/pages/multi/%5Baddress%5D/transaction/%5BtransactionID%5D.tsx#L122
-		// 1.) base64 decodes the signatures[0] and bodyBytes from signing
-		// 2.) Makes the multisig tx bytes with makeMultisignedTxBytes
-		// 3.) Creates StargateClient and broadcasts tx bytes
-		// Gets multisig pubkey from account on chain https://github.com/sei-protocol/fuzio-sei-multisig-ui/blob/40d72350db834b284562f81513ab18cffb30e9dd/pages/multi/%5Baddress%5D/transaction/%5BtransactionID%5D.tsx#L95
-		// https://github.com/sei-protocol/fuzio-sei-multisig-ui/blob/40d72350db834b284562f81513ab18cffb30e9dd/lib/multisigHelpers.ts#L58
-		const broadcaster = await StargateClient.connect(RPC_URL);
+		const broadcaster = await StargateClient.connect(rpcUrl);
 
 		if (!multiSigAccount) {
 			console.log('Can not find multi sig account on chain');
@@ -110,132 +66,194 @@ const MultiSig = ({}: MultiSigProps) => {
 			return;
 		}
 
-		console.log('multiSigAccountOnChain', multiSigAccount);
-		console.log('multiSignPubKey', multiSigPubkey);
 
-		console.log('signResponseBody', signResponseBody);
-		console.log('signResponseSignature', signResponseSignature);
+		const firstSignatureDecoded = JSON.parse(atob(previousSignatures[0]));
 
-		const currentAccountAddress = accounts[0].address;
+		const signaturesArray: [string, Uint8Array][] = previousSignatures.map((signature) => {
+			const decodedSignature = JSON.parse(atob(signature));
+			return [decodedSignature.address, fromBase64(decodedSignature.signature)];
+		});
 
-
-		const signatures = new Map<string, Uint8Array>([
-			[previousAddresses[0], fromBase64(previousSignatures[0])],
-			[currentAccountAddress, fromBase64(signResponseSignature)],
-		]);
-
-		console.log('signatures', signatures);
+		const signatures = new Map<string, Uint8Array>(signaturesArray);
 
 		const multiSignedTxBytes = makeMultisignedTxBytes(
 			multiSigPubkey,
 			multiSigAccount.sequence,
 			TX_FEE,
-			fromBase64(signResponseBody),
+			fromBase64(firstSignatureDecoded.body),
 			signatures
 		);
 
 		const result = await broadcaster.broadcastTx(multiSignedTxBytes);
-		console.log(result);
+
+		if (result.code !== 0) {
+			toast.error('Error broadcasting transaction');
+			return;
+		}
 		setBroadcastResponse(result);
 	};
 
 	const signTransactionForMultiSig = async () => {
-		//Signing in Fuzio
-		// https://github.com/sei-protocol/fuzio-sei-multisig-ui/blob/40d72350db834b284562f81513ab18cffb30e9dd/components/forms/TransactionSigning.tsx#L147
-		// 1.) Get offline signer amino only
-		// 2.) Get signing client
-		// 3.) Sign TX
-		// 4.) Fuzio base 64 encodes signatures[0] and bodyBytes, which get stored in DB and decoded later when making the multisig tx bytes
-		const offlineAminoSigner = await connectedWallet.getOfflineSignerAmino(CHAIN_ID);
-		const signingClient = await getSigningClient(RPC_URL, offlineAminoSigner);
-		const response = await signingClient.sign(accounts[0].address, [bankSendMsg], TX_FEE, '', {
+		if (!connectedWallet) {
+			toast.info('Please connect your wallet first.');
+			return;
+		}
+		const { multiSend } = cosmos.bank.v1beta1.MessageComposer.withTypeUrl;
+
+		const totalSeiToSend = parsedRecipients.map((parseRecipient) => parseRecipient.amount).reduce((acc, amount) => acc + amount, 0);
+
+		const inputs = [
+			{
+				address: multiSigAccountAddress,
+				coins: [{ denom: 'usei', amount: totalSeiToSend.toString() }]
+			}
+		];
+
+		const outputs = parsedRecipients.map((parseRecipient) => ({
+			address: parseRecipient.recipient,
+			coins: [{ denom: 'usei', amount: parseRecipient.amount.toString() }]
+		}));
+
+		const multiSendMsg = multiSend({
+			inputs: inputs,
+			outputs: outputs
+		});
+
+		const offlineAminoSigner = await connectedWallet.getOfflineSignerAmino(chainId);
+		const signingClient = await getSigningClient(rpcUrl, offlineAminoSigner);
+		const response = await signingClient.sign(accounts[0].address, [multiSendMsg], TX_FEE, '', {
 			accountNumber: multiSigAccount.accountNumber,
 			sequence: multiSigAccount.sequence,
-			chainId: CHAIN_ID
+			chainId
 		});
-		const decoded = registry.decodeTxBody(response.bodyBytes);
-		console.log(decoded);
-		setSignResponseBody(toBase64(response.bodyBytes));
-		setSignResponseSignature(toBase64(response.signatures[0]));
+
+		const signatureObject = {
+			address: accounts[0].address,
+			body: toBase64(response.bodyBytes),
+			signature: toBase64(response.signatures[0])
+		};
+
+		// Base64 encode the signature object
+		const encodedSignatureObject = btoa(JSON.stringify(signatureObject));
+
+		// Set the encoded signature in state (for displaying in UI)
+		setPreviousSignatures([...previousSignatures, encodedSignatureObject]);
 	};
 
 	const renderMultiSigLookup = () => {
-		if(multiSigAccount) return null;
+		if (multiSigAccount) return null;
 
 		return (
 			<div className={styles.card}>
-				<h3>Multi-Sig Account</h3>
-				<input className={styles.input} value={multiSigAccountAddress} onChange={(e) => setMultiSigAccountAddress(e.target.value)} />
-				<button className={styles.button} disabled={!isValidSeiAddress(multiSigAccountAddress)} onClick={queryMultiSigAccount}>look up multi-sig account</button>
-			</div>
-		)
-	}
-
-	const renderUnsignedTx = () => {
-		if(!multiSigAccount) return null;
-
-		if(parsedRecipients) return null;
-
-		return (
-			<div className={styles.card}>
-				<h3>Recipients</h3>
-				<p>Upload a CSV file with format recipient,amount for all the addresses you would like to send to</p>
-				<CSVUpload onParseData={setParsedRecipients} />
-			</div>
-		)
-	}
-
-	const renderSignatureInputs = () => {
-		if(!parsedRecipients) return null;
-
-		return (
-			<div className={styles.card}>
-				<h3>Signatures</h3>
-				<p>This multi-sig requires {multiSigAccount.pubkey.value.threshold} signatures. Please paste the other base64 encoded signatures below</p>
-				{Array.from({ length: multiSigAccount.pubkey.value.threshold - 1 }, (_, index) => (
-					<>
-						<input
-							className={styles.input}
-							key={index}
-							placeholder="Address..."
-							onChange={(e) => setPreviousAddresses({ ...previousAddresses, [index]: e.target.value })}
-						/>
-						<input
-							className={styles.input}
-							key={index}
-							placeholder="Signature..."
-							onChange={(e) => setPreviousSignatures({ ...previousSignatures, [index]: e.target.value })}
-						/>
-					</>
-				))}
-
-				<div>
-					<button className={styles.button} onClick={signTransactionForMultiSig}>sign tx myself</button>
-					{accounts && signResponseSignature && (
-						<>
-							<p>{accounts[0].address}</p>
-							<p>{signResponseSignature}</p>
-						</>
-					)}
-				</div>
+				<h3>Step 1: Lookup multi-sig account by address</h3>
+				<input placeholder='Multi-sig account address...' className={styles.input} value={multiSigAccountAddress}
+							 onChange={(e) => setMultiSigAccountAddress(e.target.value)} />
+				<button className={styles.button} disabled={!isValidSeiAddress(multiSigAccountAddress)}
+								onClick={queryMultiSigAccount}>look up multi-sig account
+				</button>
 			</div>
 		);
-	}
+	};
+
+	const renderCSVUpload = () => {
+		if (!multiSigAccount) return null;
+		if (parsedRecipients) return null;
+
+		return (
+			<div className={styles.card}>
+				<h3>Step 2: Upload CSV</h3>
+				<p>Upload a CSV file with two columns "Recipient" and "Amount" for all the addresses you would like to send
+					funds to. Amounts MUST be in usei.</p>
+				<CSVUpload onParseData={setParsedRecipients} />
+			</div>
+		);
+	};
+
+	const renderSignatureInputs = () => {
+		if (!parsedRecipients || !multiSigAccount || broadcastResponse) return null;
+
+		const addSignature = () => {
+			if (encodedSignatureInput) {
+				setPreviousSignatures([...previousSignatures, encodedSignatureInput]);
+				setEncodedSignatureInput('');
+			}
+		};
+
+
+		return (
+			<div className={styles.card}>
+				<h3>Step 3: Sign TX or paste other's signatures</h3>
+				<p>This multi-sig requires {multiSigAccount.pubkey.value.threshold} signatures. Please either paste the encoded
+					signatures from other accounts if you wish to broadcast this transaction or sign the transaction yourself and
+					send the encoded signature to whoever will be broadcasting the transaction.</p>
+				<h5>{previousSignatures.length}/{multiSigAccount.pubkey.value.threshold} required signatures added</h5>
+
+				<div className={styles.signaturesList}>
+					{previousSignatures.map((signature, index) => {
+						const onClickCopy = () => {
+							navigator.clipboard.writeText(signature);
+							toast.info('Signature copied to clipboard');
+						};
+						return (
+							<div key={index} className={styles.signatureItem}>
+								<div>
+									<p>Signature {index + 1}</p>
+								</div>
+								<button onClick={onClickCopy} className={styles.copyButton}>
+									<FaCopy /> copy
+								</button>
+							</div>
+						);
+					})}
+					{!hasRequiredNumberOfSignatures && (
+						<div className={styles.addSignature}>
+							<h3>Add a signature</h3>
+							<p>Option 1: </p>
+							<button className={styles.button} onClick={signTransactionForMultiSig}>
+								<FaSignature /> Sign transaction
+							</button>
+
+							<p>Option 2:</p>
+							<div className={styles.row}>
+								<input
+									className={styles.input}
+									placeholder='Paste encoded signature...'
+									value={encodedSignatureInput}
+									onChange={(e) => setEncodedSignatureInput(e.target.value)}
+								/>
+								<button onClick={addSignature} className={styles.button}>
+									<FaPlus /> Add
+								</button>
+							</div>
+						</div>
+					)}
+				</div>
+				{hasRequiredNumberOfSignatures && !broadcastResponse &&
+					<button className={styles.button} onClick={sendMultiSig}>broadcast</button>}
+
+			</div>
+		);
+	};
+
+	const renderBroadcastResponse = () => {
+		if (!broadcastResponse) return null;
+
+		return (
+			<div className={styles.card}>
+				<h3>Broadcast success!</h3>
+				<a href={`https://seiscan.app/${chainId}/tx/${broadcastResponse.transactionHash}`}>view this transaction on
+					SeiScan</a>
+			</div>
+		);
+	};
 
 	const renderContent = () => {
 		return (
 			<div className={styles.content}>
 				{renderMultiSigLookup()}
-				{renderUnsignedTx()}
+				{renderCSVUpload()}
 				{renderSignatureInputs()}
-				{signResponseSignature && previousSignatures?.[0] && <button className={styles.button} onClick={sendMultiSig}>broadcast</button>}
-
-				{broadcastResponse && (
-					<div>
-						<p>Broadcast response</p>
-						<p>{broadcastResponse}</p>
-					</div>
-				)}
+				{renderBroadcastResponse()}
 			</div>
 		);
 	};
@@ -245,19 +263,3 @@ const MultiSig = ({}: MultiSigProps) => {
 
 export default MultiSig;
 
-// Steps for MULTI SIG on CLI
-// 1.) Create Multi Sig Account on chain (assuming signer1 and signer2 exist in keychain)
-// seid keys add multisigAccountName --multisig=signer1,signer2 --multisig-threshold=2
-//
-// 2.) Sign unsigned tx from both signers (see unsigned-tx.json) and output json files of signed tx's
-// seid tx sign unsigned-tx.json --multisig=multisigAccountName --from=signer1 --chain-id=atlantic-2 --output-document=signer1_signedTx.json
-// seid tx sign unsigned-tx.json --multisig=multisigAccountName --from=signer2 --chain-id=atlantic-2 --output-document=signer2_signedTx.json
-//
-// 3.) Sign tx from multisig account and output to json file of signed tx
-// seid tx multisign unsigned-tx.json multisigb signer1_signedTx.json signer2_signedTx.json > signedTx.json
-//
-// 4.) Broadcast multisig tx
-// seid tx broadcast signedTx.json --chain-id atlantic-2 --node https://rpc.atlantic-2.seinetwork.io
-
-// sei1vmt027ycnv0klf22j8wc3mnudasz370umc3ydq
-// mimgeaCo5swd38E6I+6TEjlibFuhIEHeKxgM2eRSqBpo5iJ/hH7UXlr8lNb/95UC6CrTiM8RseCTnKr1HQT+UQ==

@@ -1,10 +1,10 @@
 import { atom } from 'recoil';
 import { ChainConfig } from '../../types';
-import { ATLANTIC_2 } from '../../config/chains';
+import { PACIFIC_1 } from '../../config/chains';
 
 export const selectedChainConfigAtom = atom<ChainConfig>({
 	key: 'selectedChainConfig',
-	default: ATLANTIC_2
+	default: PACIFIC_1
 });
 
 export const customChainIdAtom = atom<string>({

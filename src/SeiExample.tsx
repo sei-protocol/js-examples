@@ -49,7 +49,7 @@ const SeiExample = () => {
 	}
 
 	return (
-		<SeiWalletProvider chainConfiguration={selectedChainConfigUrls} wallets={['compass', 'fin', 'keplr' ] }>
+		<SeiWalletProvider chainConfiguration={selectedChainConfigUrls} wallets={['compass', 'fin', 'keplr', 'leap' ] }>
 			<div className='app'>
 				<div className='appHeader'>
 					<div className={styles.headerItem}/>
