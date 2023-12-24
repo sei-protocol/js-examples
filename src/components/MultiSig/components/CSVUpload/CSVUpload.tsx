@@ -2,6 +2,8 @@ import React from 'react';
 import { CSVUploadProps } from './types';
 import Papa from 'papaparse';
 import { toast } from 'react-toastify';
+import styles from './CSVUpload.module.sass';
+import { FaUpload } from '@react-icons/all-files/fa/FaUpload';
 
 const CSVUpload = ({ onParseData }: CSVUploadProps) => {
 
@@ -31,7 +33,18 @@ const CSVUpload = ({ onParseData }: CSVUploadProps) => {
 	};
 
 	return (
-		<input type="file" accept=".csv" onChange={handleFileUpload} />
+		<div className={styles.csvUploadInputContainer}>
+			<label htmlFor="csvUpload" className={styles.csvUploadInputLabel}>
+				<FaUpload /> Upload CSV File
+			</label>
+			<input
+				type="file"
+				id="csvUpload"
+				accept=".csv"
+				onChange={handleFileUpload}
+				className={styles.csvUploadInput}
+			/>
+		</div>
 	);
 };
 

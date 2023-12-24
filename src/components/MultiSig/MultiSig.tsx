@@ -13,11 +13,18 @@ import { toast } from 'react-toastify';
 import { FaCopy } from '@react-icons/all-files/fa/FaCopy';
 import { FaPlus } from '@react-icons/all-files/fa/FaPlus';
 import { FaSignature } from '@react-icons/all-files/fa/FaSignature';
+import { BubbleSelect } from '../BubbleSelect';
+import { BubbleSelectOption } from '../BubbleSelect/types';
 
 const TX_FEE = calculateFee(100000, '0.1usei');
 
 const MultiSig = ({}: MultiSigProps) => {
 	const { connectedWallet, accounts, chainId, rpcUrl } = useWallet();
+
+	const options = [
+		{ label: 'Manual entry', value: 'manualEntry' },
+		{ label: 'CSV Upload', value: 'csvUpload' },
+	]
 
 	const [multiSigAccountAddress, setMultiSigAccountAddress] = useState<string>('');
 	const [multiSigAccount, setMultiSigAccount] = useState<Account>();
@@ -25,7 +32,11 @@ const MultiSig = ({}: MultiSigProps) => {
 	const [encodedSignatureInput, setEncodedSignatureInput] = useState<string>();
 	const [previousSignatures, setPreviousSignatures] = useState<string[]>([]);
 
-	const [parsedRecipients, setParsedRecipients] = useState<RecipientAmount[]>();
+	const [selectedOption, setSelectedOption] = useState<BubbleSelectOption>(options[0]);
+	const [newRecipient, setNewRecipient] = useState<string>('');
+	const [newAmount, setNewAmount] = useState<string>('');
+	const [parsedRecipients, setParsedRecipients] = useState<RecipientAmount[]>([]);
+	const [finalizedRecipients, setFinalizedRecipients] = useState<RecipientAmount[]>();
 
 	const [broadcastResponse, setBroadcastResponse] = useState<DeliverTxResponse>();
 
@@ -145,8 +156,8 @@ const MultiSig = ({}: MultiSigProps) => {
 
 		return (
 			<div className={styles.card}>
-				<h3>Step 1: Lookup multi-sig account by address</h3>
-				<input placeholder='Multi-sig account address...' className={styles.input} value={multiSigAccountAddress}
+				<p className={styles.cardHeader}>Step 1: Lookup multi-sig account by address</p>
+				<input placeholder='Multi-sig address...' className={styles.input} value={multiSigAccountAddress}
 							 onChange={(e) => setMultiSigAccountAddress(e.target.value)} />
 				<button className={styles.button} disabled={!isValidSeiAddress(multiSigAccountAddress)}
 								onClick={queryMultiSigAccount}>look up multi-sig account
@@ -157,20 +168,51 @@ const MultiSig = ({}: MultiSigProps) => {
 
 	const renderCSVUpload = () => {
 		if (!multiSigAccount) return null;
-		if (parsedRecipients) return null;
+		if (finalizedRecipients) return null;
+
+		const renderRecipientContent = () => {
+			switch(selectedOption.value) {
+				case 'manualEntry':
+					const addRecipient = () => {
+						console.log(newRecipient, newAmount)
+						if (newRecipient && newAmount) {
+							setParsedRecipients([...parsedRecipients, {
+								recipient: newRecipient,
+								amount: parseFloat(newAmount)
+							}]);
+							setNewRecipient('');
+							setNewAmount('');
+						}
+					};
+
+					return (
+						<div className={styles.card}>
+							<input className={styles.input} placeholder='Recipient address...' value={newRecipient} onChange={(e) => setNewRecipient(e.target.value)} />
+							<input className={styles.input} placeholder='Amount (usei)...' value={newAmount} onChange={(e) => setNewAmount(e.target.value)} />
+							<button className={styles.button} onClick={addRecipient}>add recipient</button>
+						</div>
+					);
+					case 'csvUpload':
+						return <>
+							<p>Upload a CSV file with two columns "Recipient" and "Amount" for all the addresses you would like to send
+								funds to. Amounts MUST be in usei.</p>
+							<CSVUpload onParseData={setParsedRecipients} />
+						</>
+			}
+		}
 
 		return (
 			<div className={styles.card}>
-				<h3>Step 2: Upload CSV</h3>
-				<p>Upload a CSV file with two columns "Recipient" and "Amount" for all the addresses you would like to send
-					funds to. Amounts MUST be in usei.</p>
-				<CSVUpload onParseData={setParsedRecipients} />
+				<p className={styles.cardHeader}>Step 2: Select Recipients</p>
+				<BubbleSelect options={options} onSelect={setSelectedOption}  selectedOption={selectedOption}/>
+				{renderRecipientContent()}
+				<button className={styles.button} onClick={() => setFinalizedRecipients(parsedRecipients)}>Send to {parsedRecipients?.length || 0} recipients</button>
 			</div>
 		);
 	};
 
 	const renderSignatureInputs = () => {
-		if (!parsedRecipients || !multiSigAccount || broadcastResponse) return null;
+		if (!finalizedRecipients || !multiSigAccount || broadcastResponse) return null;
 
 		const addSignature = () => {
 			if (encodedSignatureInput) {
@@ -182,7 +224,7 @@ const MultiSig = ({}: MultiSigProps) => {
 
 		return (
 			<div className={styles.card}>
-				<h3>Step 3: Sign TX or paste other's signatures</h3>
+				<p className={styles.cardHeader}>Step 3: Sign TX or paste other's signatures</p>
 				<p>This multi-sig requires {multiSigAccount.pubkey.value.threshold} signatures. Please either paste the encoded
 					signatures from other accounts if you wish to broadcast this transaction or sign the transaction yourself and
 					send the encoded signature to whoever will be broadcasting the transaction.</p>
@@ -207,7 +249,7 @@ const MultiSig = ({}: MultiSigProps) => {
 					})}
 					{!hasRequiredNumberOfSignatures && (
 						<div className={styles.addSignature}>
-							<h3>Add a signature</h3>
+							<p className={styles.cardHeader}>Add a signature</p>
 							<p>Option 1: </p>
 							<button className={styles.button} onClick={signTransactionForMultiSig}>
 								<FaSignature /> Sign transaction
@@ -240,7 +282,7 @@ const MultiSig = ({}: MultiSigProps) => {
 
 		return (
 			<div className={styles.card}>
-				<h3>Broadcast success!</h3>
+				<p className={styles.cardHeader}>Broadcast success!</p>
 				<a href={`https://seiscan.app/${chainId}/tx/${broadcastResponse.transactionHash}`}>view this transaction on
 					SeiScan</a>
 			</div>

@@ -3,32 +3,76 @@
   width: 100%
   padding: 2rem
   gap: 2rem
+  min-width: 720px
 
 .button
-  font-size: 1.25rem
-  font-weight: 500
-  padding: 0.5rem 1.5rem
-  border-radius: 2rem
-  border: none
+  background-color: #444
+  color: #fff
+  border: 1px solid #666
+  padding: 10px 20px
+  border-radius: 5px
+  font-size: 16px
   cursor: pointer
-  max-height: 40px
+  transition: background-color 0.3s, box-shadow 0.3s
+  text-align: center
+  user-select: none
+
+  &:hover
+    background-color: #555
+
+  &:focus
+    outline: none
+    box-shadow: 0 0 8px rgba(255, 255, 255, 0.6)
+
+  &:active
+    background-color: #333
+
+  &:disabled
+    background-color: #333
+    color: #aaa
+    border-color: #444
+    cursor: not-allowed
+    box-shadow: none
 
 .input
-  background-color: #000000
-  color: white
-  padding: 1rem
-  border-radius: 0.5rem
-  outline: none
-  border: none
-  font-size: 1.25rem
+  background-color: #333
+  color: #fff
+  border: 1px solid #555
+  padding: 10px 15px
+  border-radius: 5px
+  font-size: 16px
+  transition: border-color 0.3s, box-shadow 0.3s
+
+  &::placeholder
+    color: #aaa
+
+  &:focus
+    outline: none
+    border-color: #fff
+    box-shadow: 0 0 8px rgba(255, 255, 255, 0.6)
+
+  &:active
+    color: #fff
+
+  &.error
+    border-color: red
+    &::placeholder
+      color: red
 
 .card
-  background-color: #f1f1f122
-  border: #f1f1f144 solid 2px
-  border-radius: 2rem
   gap: 1rem
-  padding: 2rem
-  max-width: 640px
+  background-color: #2a2a2a
+  color: #fff
+  border-radius: 8px
+  padding: 20px
+  border: solid 1px #f1f1f111
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2)
+  margin-bottom: 20px
+  transition: box-shadow 0.3s
+
+.cardHeader
+  font-size: 1.5rem
+  font-weight: bold
 
 .row
   display: flex
