@@ -38,6 +38,7 @@ const MultiSig = ({}: MultiSigProps) => {
 	const [parsedRecipients, setParsedRecipients] = useState<RecipientAmount[]>([]);
 	const [finalizedRecipients, setFinalizedRecipients] = useState<RecipientAmount[]>();
 
+	const [isBroadcasting, setIsBroadcasting] = useState<boolean>(false);
 	const [broadcastResponse, setBroadcastResponse] = useState<DeliverTxResponse>();
 
 	const hasRequiredNumberOfSignatures = useMemo(() => {
@@ -63,17 +64,21 @@ const MultiSig = ({}: MultiSigProps) => {
 	};
 
 	const sendMultiSig = async () => {
+		if(isBroadcasting) return;
+		setIsBroadcasting(true);
 		const broadcaster = await StargateClient.connect(rpcUrl);
 
 		if (!multiSigAccount) {
-			console.log('Can not find multi sig account on chain');
+			toast.error('Can not find multi sig account on chain');
+			setIsBroadcasting(false);
 			return;
 		}
 
 		const multiSigPubkey = multiSigAccount.pubkey as unknown as MultisigThresholdPubkey;
 
 		if (!isMultisigThresholdPubkey(multiSigPubkey)) {
-			console.log('not a multi-sig threshold pubkey');
+			toast.error('not a multi-sig threshold pubkey');
+			setIsBroadcasting(false);
 			return;
 		}
 
@@ -99,8 +104,10 @@ const MultiSig = ({}: MultiSigProps) => {
 
 		if (result.code !== 0) {
 			toast.error('Error broadcasting transaction');
+			setIsBroadcasting(false);
 			return;
 		}
+		setIsBroadcasting(false);
 		setBroadcastResponse(result);
 	};
 
@@ -206,7 +213,7 @@ const MultiSig = ({}: MultiSigProps) => {
 				<p className={styles.cardHeader}>Step 2: Select Recipients</p>
 				<BubbleSelect options={options} onSelect={setSelectedOption}  selectedOption={selectedOption}/>
 				{renderRecipientContent()}
-				<button className={styles.button} onClick={() => setFinalizedRecipients(parsedRecipients)}>Send to {parsedRecipients?.length || 0} recipients</button>
+				<button disabled={parsedRecipients?.length === 0} className={styles.button} onClick={() => setFinalizedRecipients(parsedRecipients)}>Send to {parsedRecipients?.length || 0} recipients</button>
 			</div>
 		);
 	};
@@ -271,7 +278,7 @@ const MultiSig = ({}: MultiSigProps) => {
 					)}
 				</div>
 				{hasRequiredNumberOfSignatures && !broadcastResponse &&
-					<button className={styles.button} onClick={sendMultiSig}>broadcast</button>}
+					<button className={styles.button} onClick={sendMultiSig}>{isBroadcasting ? "broadcasting...": "broadcast"}</button>}
 
 			</div>
 		);
