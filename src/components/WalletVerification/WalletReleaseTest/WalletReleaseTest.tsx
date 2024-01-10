@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { WalletReleaseTestProps } from './types';
 import styles from './WalletReleaseTest.module.sass';
-import { AiFillPlayCircle } from 'react-icons/all';
 import { useWallet } from '@sei-js/react';
 import { signObject } from '../verify';
 import { useWalletTests } from '../hooks';
+import { IoPlayCircle } from 'react-icons/io5';
 
 const WalletReleaseTest = ({}: WalletReleaseTestProps) => {
 	const { connectedWallet } = useWallet();
@@ -51,7 +51,7 @@ const WalletReleaseTest = ({}: WalletReleaseTestProps) => {
 	return (
 		<div className={styles.content}>
 			<div className={styles.fullTestAction}>
-				<AiFillPlayCircle onClick={onClickTest} />
+				<IoPlayCircle onClick={onClickTest} />
 				{verificationSignature ? <p className={styles.success}>Verified {connectedWallet.walletInfo.name} version {version}</p> : <p>Verify all</p>}
 			</div>
 			<p>{verificationSignature}</p>

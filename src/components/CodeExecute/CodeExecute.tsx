@@ -1,7 +1,9 @@
 import { CodeExecuteProps } from './types';
 import styles from './CodeExecute.module.sass';
 import { androidstudio, anOldHope, CodeBlock, CopyBlock } from 'react-code-blocks';
-import { AiFillCaretDown, AiFillCaretUp, AiFillPlayCircle } from 'react-icons/all';
+import { AiFillPlayCircle } from '@react-icons/all-files/ai/AiFillPlayCircle';
+import { AiFillCaretDown } from '@react-icons/all-files/ai/AiFillCaretDown';
+import { AiFillCaretUp } from '@react-icons/all-files/ai/AiFillCaretUp';
 import cn from 'classnames';
 import React, { useState } from 'react';
 import { CopyBlockProps } from 'react-code-blocks/src/components/CopyBlock';
@@ -19,7 +21,6 @@ const CodeExecute = ({ title, text, onClickExecute, response, error }: CodeExecu
 		language,
 		showLineNumbers: false,
 		startingLineNumber: 0,
-		wrapLines: true,
 		theme: anOldHope,
 		codeBlock: false,
 		copied: false,
@@ -36,7 +37,6 @@ const CodeExecute = ({ title, text, onClickExecute, response, error }: CodeExecu
 			language,
 			showLineNumbers: false,
 			startingLineNumber: 0,
-			wrapLines: true,
 			theme: anOldHope,
 			codeBlock: true,
 			copied: false,

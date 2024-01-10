@@ -13,28 +13,30 @@ import { toast } from 'react-toastify';
 import { FaCopy } from '@react-icons/all-files/fa/FaCopy';
 import { FaPlus } from '@react-icons/all-files/fa/FaPlus';
 import { FaSignature } from '@react-icons/all-files/fa/FaSignature';
-import { BubbleSelect } from '../BubbleSelect';
-import { BubbleSelectOption } from '../BubbleSelect/types';
+import { HiLightBulb } from '@react-icons/all-files/hi/HiLightBulb';
+import { BiSpreadsheet } from '@react-icons/all-files/bi/BiSpreadsheet';
+import cn from 'classnames';
+import { HiTrash } from '@react-icons/all-files/hi/HiTrash';
 
 const TX_FEE = calculateFee(100000, '0.1usei');
+
+export const truncateAddress = (address: string) => {
+	if (!isValidSeiAddress(address)) {
+		return address;
+	}
+	return `${address.slice(0, 6)}....${address.slice(address.length - 6)}`;
+};
 
 const MultiSig = ({}: MultiSigProps) => {
 	const { connectedWallet, accounts, chainId, rpcUrl } = useWallet();
 
-	const options = [
-		{ label: 'Manual entry', value: 'manualEntry' },
-		{ label: 'CSV Upload', value: 'csvUpload' },
-	]
-
+	const [isQueryingMultiSigAccount, setIsQueryingMultiSigAccount] = useState<boolean>(false);
 	const [multiSigAccountAddress, setMultiSigAccountAddress] = useState<string>('');
 	const [multiSigAccount, setMultiSigAccount] = useState<Account>();
 
 	const [encodedSignatureInput, setEncodedSignatureInput] = useState<string>();
 	const [previousSignatures, setPreviousSignatures] = useState<string[]>([]);
 
-	const [selectedOption, setSelectedOption] = useState<BubbleSelectOption>(options[0]);
-	const [newRecipient, setNewRecipient] = useState<string>('');
-	const [newAmount, setNewAmount] = useState<string>('');
 	const [parsedRecipients, setParsedRecipients] = useState<RecipientAmount[]>([]);
 	const [finalizedRecipients, setFinalizedRecipients] = useState<RecipientAmount[]>();
 
@@ -47,68 +49,86 @@ const MultiSig = ({}: MultiSigProps) => {
 	}, [multiSigAccount, previousSignatures]);
 
 	const queryMultiSigAccount = async () => {
+		if (isQueryingMultiSigAccount) return;
+		setIsQueryingMultiSigAccount(true);
 		const broadcaster = await StargateClient.connect(rpcUrl);
 		const account = await broadcaster.getAccount(multiSigAccountAddress);
 		if (!account) {
 			toast.info(`The account address you entered does not exists on chain ${chainId}.`);
+			setIsQueryingMultiSigAccount(false);
 			return;
 		}
 
 		const multiSigPubkey = account.pubkey as unknown as MultisigThresholdPubkey;
 
+		if (!multiSigPubkey) {
+			toast.info('The account address you entered is not a multi-sig account that exists on chain. You must execute a TX from this multi-sig using the CLI before using this UI.');
+			setIsQueryingMultiSigAccount(false);
+			return;
+		}
+
 		if (!isMultisigThresholdPubkey(multiSigPubkey)) {
 			toast.info('The account address you entered is not a multi-sig account that exists on chain.');
+			setIsQueryingMultiSigAccount(false);
 			return;
 		}
 		setMultiSigAccount(account);
+		setIsQueryingMultiSigAccount(false);
 	};
 
 	const sendMultiSig = async () => {
-		if(isBroadcasting) return;
-		setIsBroadcasting(true);
-		const broadcaster = await StargateClient.connect(rpcUrl);
+		try {
+			if (isBroadcasting) return;
+			setIsBroadcasting(true);
+			const broadcaster = await StargateClient.connect(rpcUrl);
 
-		if (!multiSigAccount) {
-			toast.error('Can not find multi sig account on chain');
+			if (!multiSigAccount) {
+				toast.error('Can not find multi sig account on chain');
+				setIsBroadcasting(false);
+				return;
+			}
+
+			const multiSigPubkey = multiSigAccount.pubkey as unknown as MultisigThresholdPubkey;
+
+			if (!isMultisigThresholdPubkey(multiSigPubkey)) {
+				toast.error('not a multi-sig threshold pubkey');
+				setIsBroadcasting(false);
+				return;
+			}
+
+
+			const firstSignatureDecoded = JSON.parse(atob(previousSignatures[0]));
+
+			const signaturesArray: [string, Uint8Array][] = previousSignatures.map((signature) => {
+				const decodedSignature = JSON.parse(atob(signature));
+				return [decodedSignature.address, fromBase64(decodedSignature.signature)];
+			});
+
+			const signatures = new Map<string, Uint8Array>(signaturesArray);
+
+			const multiSignedTxBytes = makeMultisignedTxBytes(
+				multiSigPubkey,
+				multiSigAccount.sequence,
+				TX_FEE,
+				fromBase64(firstSignatureDecoded.body),
+				signatures
+			);
+
+			const result = await broadcaster.broadcastTx(multiSignedTxBytes);
+
+			if (result.code !== 0) {
+				toast.error('Error broadcasting transaction');
+				setIsBroadcasting(false);
+				return;
+			}
 			setIsBroadcasting(false);
-			return;
-		}
-
-		const multiSigPubkey = multiSigAccount.pubkey as unknown as MultisigThresholdPubkey;
-
-		if (!isMultisigThresholdPubkey(multiSigPubkey)) {
-			toast.error('not a multi-sig threshold pubkey');
+			setBroadcastResponse(result);
+		} catch (e) {
+			console.log(e.message)
+			toast.error(`Error broadcasting transaction: ${e.message}`);
 			setIsBroadcasting(false);
-			return;
+			setBroadcastResponse(undefined);
 		}
-
-
-		const firstSignatureDecoded = JSON.parse(atob(previousSignatures[0]));
-
-		const signaturesArray: [string, Uint8Array][] = previousSignatures.map((signature) => {
-			const decodedSignature = JSON.parse(atob(signature));
-			return [decodedSignature.address, fromBase64(decodedSignature.signature)];
-		});
-
-		const signatures = new Map<string, Uint8Array>(signaturesArray);
-
-		const multiSignedTxBytes = makeMultisignedTxBytes(
-			multiSigPubkey,
-			multiSigAccount.sequence,
-			TX_FEE,
-			fromBase64(firstSignatureDecoded.body),
-			signatures
-		);
-
-		const result = await broadcaster.broadcastTx(multiSignedTxBytes);
-
-		if (result.code !== 0) {
-			toast.error('Error broadcasting transaction');
-			setIsBroadcasting(false);
-			return;
-		}
-		setIsBroadcasting(false);
-		setBroadcastResponse(result);
 	};
 
 	const signTransactionForMultiSig = async () => {
@@ -164,10 +184,16 @@ const MultiSig = ({}: MultiSigProps) => {
 		return (
 			<div className={styles.card}>
 				<p className={styles.cardHeader}>Step 1: Lookup multi-sig account by address</p>
+				<div className={styles.cardTip}>
+					<HiLightBulb className={styles.tipBulb} />
+					<p className={styles.tipText}>Multi-sig must have signed and broadcast at least one transaction before this tool can be
+						used.</p>
+				</div>
 				<input placeholder='Multi-sig address...' className={styles.input} value={multiSigAccountAddress}
 							 onChange={(e) => setMultiSigAccountAddress(e.target.value)} />
-				<button className={styles.button} disabled={!isValidSeiAddress(multiSigAccountAddress)}
-								onClick={queryMultiSigAccount}>look up multi-sig account
+				<button className={styles.button}
+								disabled={isQueryingMultiSigAccount || !isValidSeiAddress(multiSigAccountAddress)}
+								onClick={queryMultiSigAccount}>look up account
 				</button>
 			</div>
 		);
@@ -177,43 +203,52 @@ const MultiSig = ({}: MultiSigProps) => {
 		if (!multiSigAccount) return null;
 		if (finalizedRecipients) return null;
 
-		const renderRecipientContent = () => {
-			switch(selectedOption.value) {
-				case 'manualEntry':
-					const addRecipient = () => {
-						console.log(newRecipient, newAmount)
-						if (newRecipient && newAmount) {
-							setParsedRecipients([...parsedRecipients, {
-								recipient: newRecipient,
-								amount: parseFloat(newAmount)
-							}]);
-							setNewRecipient('');
-							setNewAmount('');
-						}
-					};
+		const renderRecipientList = () => {
+			if(parsedRecipients.length === 0) return null;
 
-					return (
-						<div className={styles.card}>
-							<input className={styles.input} placeholder='Recipient address...' value={newRecipient} onChange={(e) => setNewRecipient(e.target.value)} />
-							<input className={styles.input} placeholder='Amount (usei)...' value={newAmount} onChange={(e) => setNewAmount(e.target.value)} />
-							<button className={styles.button} onClick={addRecipient}>add recipient</button>
-						</div>
-					);
-					case 'csvUpload':
-						return <>
-							<p>Upload a CSV file with two columns "Recipient" and "Amount" for all the addresses you would like to send
-								funds to. Amounts MUST be in usei.</p>
-							<CSVUpload onParseData={setParsedRecipients} />
-						</>
-			}
-		}
+			return (
+				<div className={styles.recipient}>
+					<div className={styles.recipientItem}>
+						<p>RECIPIENT</p>
+						<p>AMOUNT</p>
+					</div>
+					<div className={styles.recipientList}>
+						{parsedRecipients.length === 0 ? <p className={styles.emptySet}>No recipients added yet...</p> :parsedRecipients.map((recipient, index) => {
+							return (
+								<div key={index} className={styles.recipientItem}>
+									<p>{recipient.recipient}</p>
+									<p>{recipient.amount} usei</p>
+								</div>
+							);
+						})}
+					</div>
+				</div>
+			);
+		};
+
+		const renderRecipientContent = () => {
+			if(parsedRecipients.length !== 0) return null;
+
+			return (
+				<>
+					<div className={styles.cardTip}>
+						<BiSpreadsheet className={styles.tipBulb} />
+						<p>Upload a CSV file with two columns "Recipient" and "Amount" for all the addresses you would like to send
+							funds to. Amounts MUST be in usei.</p>
+					</div>
+					<CSVUpload onParseData={setParsedRecipients} />
+				</>);
+		};
 
 		return (
 			<div className={styles.card}>
-				<p className={styles.cardHeader}>Step 2: Select Recipients</p>
-				<BubbleSelect options={options} onSelect={setSelectedOption}  selectedOption={selectedOption}/>
+				<p className={styles.cardHeader}>Step 2: {parsedRecipients.length === 0 ? "Select" : "Confirm"} Recipients</p>
 				{renderRecipientContent()}
-				<button disabled={parsedRecipients?.length === 0} className={styles.button} onClick={() => setFinalizedRecipients(parsedRecipients)}>Send to {parsedRecipients?.length || 0} recipients</button>
+				{renderRecipientList()}
+				<button disabled={parsedRecipients?.length === 0} className={cn(styles.button, { [styles.buttonReady]: parsedRecipients?.length !== 0 })}
+								onClick={() => setFinalizedRecipients(parsedRecipients)}>Send {parsedRecipients.map((recipient) => recipient.amount).reduce((acc, curr) => acc + curr, 0)}usei total
+					to {parsedRecipients?.length || 0} recipients
+				</button>
 			</div>
 		);
 	};
@@ -235,6 +270,7 @@ const MultiSig = ({}: MultiSigProps) => {
 				<p>This multi-sig requires {multiSigAccount.pubkey.value.threshold} signatures. Please either paste the encoded
 					signatures from other accounts if you wish to broadcast this transaction or sign the transaction yourself and
 					send the encoded signature to whoever will be broadcasting the transaction.</p>
+				<p>Signing this should send {parsedRecipients.map((recipient) => recipient.amount).reduce((acc, curr) => acc + curr, 0)}usei to {parsedRecipients.length} wallets, please always confirm this amount when signing.</p>
 				<h5>{previousSignatures.length}/{multiSigAccount.pubkey.value.threshold} required signatures added</h5>
 
 				<div className={styles.signaturesList}>
@@ -243,14 +279,19 @@ const MultiSig = ({}: MultiSigProps) => {
 							navigator.clipboard.writeText(signature);
 							toast.info('Signature copied to clipboard');
 						};
+						const decodedSignature = JSON.parse(atob(signature));
 						return (
 							<div key={index} className={styles.signatureItem}>
-								<div>
-									<p>Signature {index + 1}</p>
+								<p className={styles.cardHeader}>SIGNER {index + 1}:</p>
+								<div className={styles.cardTip}>
+									{decodedSignature && truncateAddress(decodedSignature.address)}
 								</div>
 								<button onClick={onClickCopy} className={styles.copyButton}>
-									<FaCopy /> copy
+									<FaCopy /> copy signature
 								</button>
+								<HiTrash className={styles.trash} onClick={() => {
+									setPreviousSignatures(previousSignatures.filter((_, i) => i !== index));
+								}} />
 							</div>
 						);
 					})}
@@ -277,8 +318,10 @@ const MultiSig = ({}: MultiSigProps) => {
 						</div>
 					)}
 				</div>
-				{hasRequiredNumberOfSignatures && !broadcastResponse &&
-					<button className={styles.button} onClick={sendMultiSig}>{isBroadcasting ? "broadcasting...": "broadcast"}</button>}
+				{!broadcastResponse &&
+					<button className={cn(styles.button, { [styles.buttonReady]: hasRequiredNumberOfSignatures })}
+									disabled={!hasRequiredNumberOfSignatures || isBroadcasting}
+									onClick={sendMultiSig}>{isBroadcasting ? 'broadcasting...' : 'broadcast'}</button>}
 
 			</div>
 		);
