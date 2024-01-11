@@ -14,7 +14,8 @@ const CSVUpload = ({ onParseData }: CSVUploadProps) => {
 			header: true,
 			skipEmptyLines: true,
 			complete: (result) => {
-				const isValidFormat = result.meta.fields.includes('Recipient') && result.meta.fields.includes('Amount');
+				console.log('result', result)
+				const isValidFormat = result.meta.fields.includes('Recipient') && result.meta.fields.includes('Amount') && result.meta.fields.includes('Denom');
 
 				if (!isValidFormat) {
 					toast.error("Invalid CSV format");
@@ -22,10 +23,20 @@ const CSVUpload = ({ onParseData }: CSVUploadProps) => {
 					return;
 				}
 
-				const formattedData = result.data.map(row => ({
-					recipient: row['Recipient'],
-					amount: parseFloat(row['Amount'])
-				}));
+				const formattedData = result.data.map(row => {
+					let returnData = {
+						recipient: row['Recipient'],
+						denom: row['Denom'],
+						amount: parseFloat(row['Amount'])
+					};
+
+					if(row['Denom'].toLowerCase() === 'sei') {
+						returnData.amount = returnData.amount * 1000000;
+						returnData.denom = 'usei';
+					}
+
+					return returnData;
+				});
 
 				onParseData(formattedData);
 			}

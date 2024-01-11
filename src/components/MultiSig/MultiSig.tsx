@@ -18,7 +18,6 @@ import { BiSpreadsheet } from '@react-icons/all-files/bi/BiSpreadsheet';
 import cn from 'classnames';
 import { HiTrash } from '@react-icons/all-files/hi/HiTrash';
 
-const TX_FEE = calculateFee(100000, '0.1usei');
 
 export const truncateAddress = (address: string) => {
 	if (!isValidSeiAddress(address)) {
@@ -47,6 +46,8 @@ const MultiSig = ({}: MultiSigProps) => {
 		if (!multiSigAccount) return false;
 		return parseInt(multiSigAccount.pubkey.value.threshold) === previousSignatures.length;
 	}, [multiSigAccount, previousSignatures]);
+
+	const TX_FEE = calculateFee((100000 * parsedRecipients.length), '0.1usei');
 
 	const queryMultiSigAccount = async () => {
 		if (isQueryingMultiSigAccount) return;
@@ -138,18 +139,23 @@ const MultiSig = ({}: MultiSigProps) => {
 		}
 		const { multiSend } = cosmos.bank.v1beta1.MessageComposer.withTypeUrl;
 
-		const totalSeiToSend = parsedRecipients.map((parseRecipient) => parseRecipient.amount).reduce((acc, amount) => acc + amount, 0);
-
-		const inputs = [
-			{
-				address: multiSigAccountAddress,
-				coins: [{ denom: 'usei', amount: totalSeiToSend.toString() }]
+		const totalAmountsByDenom = parsedRecipients.reduce((acc, recipient) => {
+			if (acc[recipient.denom]) {
+				acc[recipient.denom] += recipient.amount;
+			} else {
+				acc[recipient.denom] = recipient.amount;
 			}
-		];
+			return acc;
+		}, {});
+
+		const inputs = Object.entries(totalAmountsByDenom).map(([denom, amount]) => ({
+			address: multiSigAccountAddress,
+			coins: [{ denom, amount: amount.toString() }]
+		}));
 
 		const outputs = parsedRecipients.map((parseRecipient) => ({
 			address: parseRecipient.recipient,
-			coins: [{ denom: 'usei', amount: parseRecipient.amount.toString() }]
+			coins: [{ denom: parseRecipient.denom, amount: parseRecipient.amount.toString() }]
 		}));
 
 		const multiSendMsg = multiSend({
@@ -217,7 +223,7 @@ const MultiSig = ({}: MultiSigProps) => {
 							return (
 								<div key={index} className={styles.recipientItem}>
 									<p>{recipient.recipient}</p>
-									<p>{recipient.amount} usei</p>
+									<p>{recipient.amount} {recipient.denom}</p>
 								</div>
 							);
 						})}
@@ -233,8 +239,7 @@ const MultiSig = ({}: MultiSigProps) => {
 				<>
 					<div className={styles.cardTip}>
 						<BiSpreadsheet className={styles.tipBulb} />
-						<p>Upload a CSV file with two columns "Recipient" and "Amount" for all the addresses you would like to send
-							funds to. Amounts MUST be in usei.</p>
+						<p>Upload a CSV file with two columns "Recipient" and "Amount" for all the addresses you would like to send funds to. Amounts MUST be in usei.</p>
 					</div>
 					<CSVUpload onParseData={setParsedRecipients} />
 				</>);
@@ -245,9 +250,10 @@ const MultiSig = ({}: MultiSigProps) => {
 				<p className={styles.cardHeader}>Step 2: {parsedRecipients.length === 0 ? "Select" : "Confirm"} Recipients</p>
 				{renderRecipientContent()}
 				{renderRecipientList()}
-				<button disabled={parsedRecipients?.length === 0} className={cn(styles.button, { [styles.buttonReady]: parsedRecipients?.length !== 0 })}
-								onClick={() => setFinalizedRecipients(parsedRecipients)}>Send {parsedRecipients.map((recipient) => recipient.amount).reduce((acc, curr) => acc + curr, 0)}usei total
-					to {parsedRecipients?.length || 0} recipients
+				<button disabled={parsedRecipients?.length === 0}
+								className={cn(styles.button, { [styles.buttonReady]: parsedRecipients?.length !== 0 })}
+								onClick={() => setFinalizedRecipients(parsedRecipients)}>
+					Sign transaction
 				</button>
 			</div>
 		);
@@ -270,7 +276,6 @@ const MultiSig = ({}: MultiSigProps) => {
 				<p>This multi-sig requires {multiSigAccount.pubkey.value.threshold} signatures. Please either paste the encoded
 					signatures from other accounts if you wish to broadcast this transaction or sign the transaction yourself and
 					send the encoded signature to whoever will be broadcasting the transaction.</p>
-				<p>Signing this should send {parsedRecipients.map((recipient) => recipient.amount).reduce((acc, curr) => acc + curr, 0)}usei to {parsedRecipients.length} wallets, please always confirm this amount when signing.</p>
 				<h5>{previousSignatures.length}/{multiSigAccount.pubkey.value.threshold} required signatures added</h5>
 
 				<div className={styles.signaturesList}>
