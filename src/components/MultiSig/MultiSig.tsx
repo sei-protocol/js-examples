@@ -46,7 +46,7 @@ const MultiSig = ({}: MultiSigProps) => {
 		return parseInt(multiSigAccount.pubkey.value.threshold) === previousSignatures.length;
 	}, [multiSigAccount, previousSignatures]);
 
-	const TX_FEE = calculateFee(120000 * parsedRecipients.length, '0.1usei');
+	const TX_FEE = calculateFee(400000, '0.1usei');
 
 	const queryMultiSigAccount = async () => {
 		if (isQueryingMultiSigAccount) return;
