@@ -18,7 +18,6 @@ import { BiSpreadsheet } from '@react-icons/all-files/bi/BiSpreadsheet';
 import cn from 'classnames';
 import { HiTrash } from '@react-icons/all-files/hi/HiTrash';
 
-
 export const truncateAddress = (address: string) => {
 	if (!isValidSeiAddress(address)) {
 		return address;
@@ -47,7 +46,7 @@ const MultiSig = ({}: MultiSigProps) => {
 		return parseInt(multiSigAccount.pubkey.value.threshold) === previousSignatures.length;
 	}, [multiSigAccount, previousSignatures]);
 
-	const TX_FEE = calculateFee((100000 * parsedRecipients.length), '0.1usei');
+	const TX_FEE = calculateFee(120000 * parsedRecipients.length, '0.1usei');
 
 	const queryMultiSigAccount = async () => {
 		if (isQueryingMultiSigAccount) return;
@@ -63,7 +62,9 @@ const MultiSig = ({}: MultiSigProps) => {
 		const multiSigPubkey = account.pubkey as unknown as MultisigThresholdPubkey;
 
 		if (!multiSigPubkey) {
-			toast.info('The account address you entered is not a multi-sig account that exists on chain. You must execute a TX from this multi-sig using the CLI before using this UI.');
+			toast.info(
+				'The account address you entered is not a multi-sig account that exists on chain. You must execute a TX from this multi-sig using the CLI before using this UI.'
+			);
 			setIsQueryingMultiSigAccount(false);
 			return;
 		}
@@ -97,7 +98,6 @@ const MultiSig = ({}: MultiSigProps) => {
 				return;
 			}
 
-
 			const firstSignatureDecoded = JSON.parse(atob(previousSignatures[0]));
 
 			const signaturesArray: [string, Uint8Array][] = previousSignatures.map((signature) => {
@@ -107,13 +107,7 @@ const MultiSig = ({}: MultiSigProps) => {
 
 			const signatures = new Map<string, Uint8Array>(signaturesArray);
 
-			const multiSignedTxBytes = makeMultisignedTxBytes(
-				multiSigPubkey,
-				multiSigAccount.sequence,
-				TX_FEE,
-				fromBase64(firstSignatureDecoded.body),
-				signatures
-			);
+			const multiSignedTxBytes = makeMultisignedTxBytes(multiSigPubkey, multiSigAccount.sequence, TX_FEE, fromBase64(firstSignatureDecoded.body), signatures);
 
 			const result = await broadcaster.broadcastTx(multiSignedTxBytes);
 
@@ -125,7 +119,7 @@ const MultiSig = ({}: MultiSigProps) => {
 			setIsBroadcasting(false);
 			setBroadcastResponse(result);
 		} catch (e) {
-			console.log(e.message)
+			console.log(e.message);
 			toast.error(`Error broadcasting transaction: ${e.message}`);
 			setIsBroadcasting(false);
 			setBroadcastResponse(undefined);
@@ -192,14 +186,16 @@ const MultiSig = ({}: MultiSigProps) => {
 				<p className={styles.cardHeader}>Step 1: Lookup multi-sig account by address</p>
 				<div className={styles.cardTip}>
 					<HiLightBulb className={styles.tipBulb} />
-					<p className={styles.tipText}>Multi-sig must have signed and broadcast at least one transaction before this tool can be
-						used.</p>
+					<p className={styles.tipText}>Multi-sig must have signed and broadcast at least one transaction before this tool can be used.</p>
 				</div>
-				<input placeholder='Multi-sig address...' className={styles.input} value={multiSigAccountAddress}
-							 onChange={(e) => setMultiSigAccountAddress(e.target.value)} />
-				<button className={styles.button}
-								disabled={isQueryingMultiSigAccount || !isValidSeiAddress(multiSigAccountAddress)}
-								onClick={queryMultiSigAccount}>look up account
+				<input
+					placeholder='Multi-sig address...'
+					className={styles.input}
+					value={multiSigAccountAddress}
+					onChange={(e) => setMultiSigAccountAddress(e.target.value)}
+				/>
+				<button className={styles.button} disabled={isQueryingMultiSigAccount || !isValidSeiAddress(multiSigAccountAddress)} onClick={queryMultiSigAccount}>
+					look up account
 				</button>
 			</div>
 		);
@@ -210,7 +206,7 @@ const MultiSig = ({}: MultiSigProps) => {
 		if (finalizedRecipients) return null;
 
 		const renderRecipientList = () => {
-			if(parsedRecipients.length === 0) return null;
+			if (parsedRecipients.length === 0) return null;
 
 			return (
 				<div className={styles.recipient}>
@@ -219,21 +215,27 @@ const MultiSig = ({}: MultiSigProps) => {
 						<p>AMOUNT</p>
 					</div>
 					<div className={styles.recipientList}>
-						{parsedRecipients.length === 0 ? <p className={styles.emptySet}>No recipients added yet...</p> :parsedRecipients.map((recipient, index) => {
-							return (
-								<div key={index} className={styles.recipientItem}>
-									<p>{recipient.recipient}</p>
-									<p>{recipient.amount} {recipient.denom}</p>
-								</div>
-							);
-						})}
+						{parsedRecipients.length === 0 ? (
+							<p className={styles.emptySet}>No recipients added yet...</p>
+						) : (
+							parsedRecipients.map((recipient, index) => {
+								return (
+									<div key={index} className={styles.recipientItem}>
+										<p>{recipient.recipient}</p>
+										<p>
+											{recipient.amount} {recipient.denom}
+										</p>
+									</div>
+								);
+							})
+						)}
 					</div>
 				</div>
 			);
 		};
 
 		const renderRecipientContent = () => {
-			if(parsedRecipients.length !== 0) return null;
+			if (parsedRecipients.length !== 0) return null;
 
 			return (
 				<>
@@ -242,17 +244,19 @@ const MultiSig = ({}: MultiSigProps) => {
 						<p>Upload a CSV file with two columns "Recipient" and "Amount" for all the addresses you would like to send funds to. Amounts MUST be in usei.</p>
 					</div>
 					<CSVUpload onParseData={setParsedRecipients} />
-				</>);
+				</>
+			);
 		};
 
 		return (
 			<div className={styles.card}>
-				<p className={styles.cardHeader}>Step 2: {parsedRecipients.length === 0 ? "Select" : "Confirm"} Recipients</p>
+				<p className={styles.cardHeader}>Step 2: {parsedRecipients.length === 0 ? 'Select' : 'Confirm'} Recipients</p>
 				{renderRecipientContent()}
 				{renderRecipientList()}
-				<button disabled={parsedRecipients?.length === 0}
-								className={cn(styles.button, { [styles.buttonReady]: parsedRecipients?.length !== 0 })}
-								onClick={() => setFinalizedRecipients(parsedRecipients)}>
+				<button
+					disabled={parsedRecipients?.length === 0}
+					className={cn(styles.button, { [styles.buttonReady]: parsedRecipients?.length !== 0 })}
+					onClick={() => setFinalizedRecipients(parsedRecipients)}>
 					Sign transaction
 				</button>
 			</div>
@@ -269,14 +273,16 @@ const MultiSig = ({}: MultiSigProps) => {
 			}
 		};
 
-
 		return (
 			<div className={styles.card}>
 				<p className={styles.cardHeader}>Step 3: Sign TX or paste other's signatures</p>
-				<p>This multi-sig requires {multiSigAccount.pubkey.value.threshold} signatures. Please either paste the encoded
-					signatures from other accounts if you wish to broadcast this transaction or sign the transaction yourself and
-					send the encoded signature to whoever will be broadcasting the transaction.</p>
-				<h5>{previousSignatures.length}/{multiSigAccount.pubkey.value.threshold} required signatures added</h5>
+				<p>
+					This multi-sig requires {multiSigAccount.pubkey.value.threshold} signatures. Please either paste the encoded signatures from other accounts if you wish to
+					broadcast this transaction or sign the transaction yourself and send the encoded signature to whoever will be broadcasting the transaction.
+				</p>
+				<h5>
+					{previousSignatures.length}/{multiSigAccount.pubkey.value.threshold} required signatures added
+				</h5>
 
 				<div className={styles.signaturesList}>
 					{previousSignatures.map((signature, index) => {
@@ -288,15 +294,16 @@ const MultiSig = ({}: MultiSigProps) => {
 						return (
 							<div key={index} className={styles.signatureItem}>
 								<p className={styles.cardHeader}>SIGNER {index + 1}:</p>
-								<div className={styles.cardTip}>
-									{decodedSignature && truncateAddress(decodedSignature.address)}
-								</div>
+								<div className={styles.cardTip}>{decodedSignature && truncateAddress(decodedSignature.address)}</div>
 								<button onClick={onClickCopy} className={styles.copyButton}>
 									<FaCopy /> copy signature
 								</button>
-								<HiTrash className={styles.trash} onClick={() => {
-									setPreviousSignatures(previousSignatures.filter((_, i) => i !== index));
-								}} />
+								<HiTrash
+									className={styles.trash}
+									onClick={() => {
+										setPreviousSignatures(previousSignatures.filter((_, i) => i !== index));
+									}}
+								/>
 							</div>
 						);
 					})}
@@ -323,11 +330,14 @@ const MultiSig = ({}: MultiSigProps) => {
 						</div>
 					)}
 				</div>
-				{!broadcastResponse &&
-					<button className={cn(styles.button, { [styles.buttonReady]: hasRequiredNumberOfSignatures })}
-									disabled={!hasRequiredNumberOfSignatures || isBroadcasting}
-									onClick={sendMultiSig}>{isBroadcasting ? 'broadcasting...' : 'broadcast'}</button>}
-
+				{!broadcastResponse && (
+					<button
+						className={cn(styles.button, { [styles.buttonReady]: hasRequiredNumberOfSignatures })}
+						disabled={!hasRequiredNumberOfSignatures || isBroadcasting}
+						onClick={sendMultiSig}>
+						{isBroadcasting ? 'broadcasting...' : 'broadcast'}
+					</button>
+				)}
 			</div>
 		);
 	};
@@ -338,8 +348,7 @@ const MultiSig = ({}: MultiSigProps) => {
 		return (
 			<div className={styles.card}>
 				<p className={styles.cardHeader}>Broadcast success!</p>
-				<a href={`https://seiscan.app/${chainId}/tx/${broadcastResponse.transactionHash}`}>view this transaction on
-					SeiScan</a>
+				<a href={`https://seiscan.app/${chainId}/tx/${broadcastResponse.transactionHash}`}>view this transaction on SeiScan</a>
 			</div>
 		);
 	};
@@ -359,4 +368,3 @@ const MultiSig = ({}: MultiSigProps) => {
 };
 
 export default MultiSig;
-
