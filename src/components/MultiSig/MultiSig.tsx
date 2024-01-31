@@ -17,6 +17,9 @@ import { HiLightBulb } from '@react-icons/all-files/hi/HiLightBulb';
 import { BiSpreadsheet } from '@react-icons/all-files/bi/BiSpreadsheet';
 import cn from 'classnames';
 import { HiTrash } from '@react-icons/all-files/hi/HiTrash';
+import Drawer from 'react-modern-drawer'
+import 'react-modern-drawer/dist/index.css'
+
 
 export const truncateAddress = (address: string) => {
 	if (!isValidSeiAddress(address)) {
@@ -37,6 +40,10 @@ const MultiSig = ({}: MultiSigProps) => {
 
 	const [parsedRecipients, setParsedRecipients] = useState<RecipientAmount[]>([]);
 	const [finalizedRecipients, setFinalizedRecipients] = useState<RecipientAmount[]>();
+
+	const [isPaneOpen, setIsPaneOpen] = useState<boolean>(false);
+	const [recipientAddress, setRecipientAddress] = useState<string>('');
+	const [recipientAmount, setRecipientAmount] = useState<number>(0);
 
 	const [isBroadcasting, setIsBroadcasting] = useState<boolean>(false);
 	const [broadcastResponse, setBroadcastResponse] = useState<DeliverTxResponse>();
@@ -202,7 +209,8 @@ const MultiSig = ({}: MultiSigProps) => {
 	};
 
 	const renderCSVUpload = () => {
-		if (!multiSigAccount) return null;
+		// TODO: MJ: set for testing please remove.
+		//if (!multiSigAccount) return null;
 		if (finalizedRecipients) return null;
 
 		const renderRecipientList = () => {
@@ -241,18 +249,92 @@ const MultiSig = ({}: MultiSigProps) => {
 				<>
 					<div className={styles.cardTip}>
 						<BiSpreadsheet className={styles.tipBulb} />
-						<p>Upload a CSV file with two columns "Recipient" and "Amount" for all the addresses you would like to send funds to. Amounts MUST be in usei.</p>
+						<div>
+						<p>Upload a CSV file with two columns "Recipient" and "Amount" for all the addresses you would like to send funds to</p>
+						<br/>
+						<p>OR</p>
+						<br/>
+						<p>Use the Add recipient button below to add recipients manually.</p>
+						<p>Amounts MUST be in usei.</p>
+						</div>
 					</div>
 					<CSVUpload onParseData={setParsedRecipients} />
 				</>
 			);
 		};
 
+		const renderAddReceipientForm = () => {
+			const handleSubmitRecipient = () => {
+				setParsedRecipients(currentRecipients =>
+					[...currentRecipients, {recipient: recipientAddress, amount: recipientAmount, denom: 'usei'}]
+				)
+				setIsPaneOpen(false);
+				setRecipientAddress('');
+				setRecipientAmount(0);
+			};
+
+			return (
+				<>
+					<Drawer
+						className={styles.card}
+						style={{background: '#2a2a2a'}}
+						open={isPaneOpen}
+						onClose={() => setIsPaneOpen((prevState) => !prevState)}
+						direction="right"
+						size="500px"
+					>
+						<h2>Add Recipient</h2>
+						<div className={styles.slidePaneContent}>
+							<div className={styles.inputWithError}>
+								<label htmlFor="recipient">Recipient Address:</label>
+								<input
+									type="text"
+									placeholder='Recipient address'
+									className={styles.input}
+									value={recipientAddress}
+									onChange={(e) => setRecipientAddress(e.target.value)}
+								/>
+								{
+									!isValidSeiAddress(recipientAddress) && <div className={styles.inputErrorText}>Please enter a valid sei address</div>
+								}
+							</div>
+							<div className={styles.inputWithError}>
+								<label htmlFor="amount">Amount:</label>
+								<input
+									type="number"
+									placeholder='amount'
+									className={styles.input}
+									value={recipientAmount}
+									onChange={(e) => setRecipientAmount(e.target.valueAsNumber)}
+								/>
+								{
+									(isNaN(recipientAmount) || recipientAmount <= 0) && <div className={styles.inputErrorText}>Please enter an amount greater than 0</div>
+								}
+							</div>
+							<button
+								className={styles.button}
+								disabled={!isValidSeiAddress(recipientAddress) || recipientAmount <= 0}
+								type="button"
+								onClick={handleSubmitRecipient}>
+								Add Recipient
+							</button>
+						</div>
+					</Drawer>
+				</>
+			)
+		}
+
 		return (
 			<div className={styles.card}>
 				<p className={styles.cardHeader}>Step 2: {parsedRecipients.length === 0 ? 'Select' : 'Confirm'} Recipients</p>
 				{renderRecipientContent()}
 				{renderRecipientList()}
+				{renderAddReceipientForm()}
+				<button
+					className={cn(styles.button)}
+					onClick={() => setIsPaneOpen(true)}>
+					Add recipient
+				</button>
 				<button
 					disabled={parsedRecipients?.length === 0}
 					className={cn(styles.button, { [styles.buttonReady]: parsedRecipients?.length !== 0 })}
@@ -264,8 +346,16 @@ const MultiSig = ({}: MultiSigProps) => {
 	};
 
 	const renderSignatureInputs = () => {
-		if (!finalizedRecipients || !multiSigAccount || broadcastResponse) return null;
-
+		// TODO: MJ: set for testing please remove.
+		// if (!finalizedRecipients || !multiSigAccount || broadcastResponse) return null;
+		// TODO: MJ: set for testing please remove.
+		if (!multiSigAccount) {
+			const pubKey = {type: "tendermint/PubKeyEd25519", value: {threshold: 2}};
+			const acc = {address: "moose", pubkey: pubKey, accountNumber: 1, sequence: 2}
+			setMultiSigAccount(acc)
+			console.log(multiSigAccount);
+		}
+		// TODO: end remove block
 		const addSignature = () => {
 			if (encodedSignatureInput) {
 				setPreviousSignatures([...previousSignatures, encodedSignatureInput]);
@@ -277,11 +367,11 @@ const MultiSig = ({}: MultiSigProps) => {
 			<div className={styles.card}>
 				<p className={styles.cardHeader}>Step 3: Sign TX or paste other's signatures</p>
 				<p>
-					This multi-sig requires {multiSigAccount.pubkey.value.threshold} signatures. Please either paste the encoded signatures from other accounts if you wish to
+					This multi-sig requires {/* TODO: MJ: set for testing please remove. multiSigAccount.pubkey.value.threshold*/ 2} signatures. Please either paste the encoded signatures from other accounts if you wish to
 					broadcast this transaction or sign the transaction yourself and send the encoded signature to whoever will be broadcasting the transaction.
 				</p>
 				<h5>
-					{previousSignatures.length}/{multiSigAccount.pubkey.value.threshold} required signatures added
+					{previousSignatures.length}/{/* TODO: MJ: set for testing please remove. multiSigAccount.pubkey.value.threshold*/ 2} required signatures added
 				</h5>
 
 				<div className={styles.signaturesList}>
