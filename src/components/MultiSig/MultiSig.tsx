@@ -6,21 +6,17 @@ import { cosmos } from '@sei-js/proto';
 import { isMultisigThresholdPubkey, MultisigThresholdPubkey } from '@cosmjs/amino';
 import { fromBase64, toBase64 } from '@cosmjs/encoding';
 import { getSigningClient, isValidSeiAddress } from '@sei-js/core';
-import { CSVUpload } from './components/CSVUpload';
 import { RecipientAmount } from './components/CSVUpload/types';
 import { useWallet } from '@sei-js/react';
 import { toast } from 'react-toastify';
 import { FaCopy } from '@react-icons/all-files/fa/FaCopy';
 import { FaPlus } from '@react-icons/all-files/fa/FaPlus';
 import { FaSignature } from '@react-icons/all-files/fa/FaSignature';
-import { HiLightBulb } from '@react-icons/all-files/hi/HiLightBulb';
-import { BiSpreadsheet } from '@react-icons/all-files/bi/BiSpreadsheet';
 import cn from 'classnames';
 import { HiTrash } from '@react-icons/all-files/hi/HiTrash';
-import Drawer from 'react-modern-drawer'
 import 'react-modern-drawer/dist/index.css'
 import MultiSigLookup from './components/MultiSigLookup/MultiSigLookup';
-import TableWithDelete from './components/Utils/TableWithDelete';
+import RecipientsPage from './components/CSVUpload/RecipientsPage';
 
 
 export const truncateAddress = (address: string) => {
@@ -40,10 +36,6 @@ const MultiSig = ({}: MultiSigProps) => {
 
 	const [parsedRecipients, setParsedRecipients] = useState<RecipientAmount[]>([]);
 	const [finalizedRecipients, setFinalizedRecipients] = useState<RecipientAmount[]>();
-
-	const [isPaneOpen, setIsPaneOpen] = useState<boolean>(false);
-	const [recipientAddress, setRecipientAddress] = useState<string>('');
-	const [recipientAmount, setRecipientAmount] = useState<number>(0);
 
 	const [isBroadcasting, setIsBroadcasting] = useState<boolean>(false);
 	const [broadcastResponse, setBroadcastResponse] = useState<DeliverTxResponse>();
@@ -110,7 +102,7 @@ const MultiSig = ({}: MultiSigProps) => {
 		}
 		const { multiSend } = cosmos.bank.v1beta1.MessageComposer.withTypeUrl;
 
-		const totalAmountsByDenom = parsedRecipients.reduce((acc, recipient) => {
+		const totalAmountsByDenom = finalizedRecipients.reduce((acc, recipient) => {
 			if (acc[recipient.denom]) {
 				acc[recipient.denom] += recipient.amount;
 			} else {
@@ -124,9 +116,9 @@ const MultiSig = ({}: MultiSigProps) => {
 			coins: [{ denom, amount: amount.toString() }]
 		}));
 
-		const outputs = parsedRecipients.map((parseRecipient) => ({
-			address: parseRecipient.recipient,
-			coins: [{ denom: parseRecipient.denom, amount: parseRecipient.amount.toString() }]
+		const outputs = finalizedRecipients.map((recipient) => ({
+			address: recipient.recipient,
+			coins: [{ denom: recipient.denom, amount: recipient.amount.toString() }]
 		}));
 
 		const multiSendMsg = multiSend({
@@ -160,142 +152,15 @@ const MultiSig = ({}: MultiSigProps) => {
 		return <MultiSigLookup setMultiSigAccount={setMultiSigAccount}></MultiSigLookup>
 	};
 
-	const renderCSVUpload = () => {
+	const renderRecipientsPage = () => {
 		if (!multiSigAccount) return null;
 		if (finalizedRecipients) return null;
 
-		const renderRecipientList = () => {
-			if (parsedRecipients.length === 0) return null;
-
-			return (
-				<TableWithDelete
-					items={parsedRecipients}
-					setItems={setParsedRecipients}>
-				</TableWithDelete>
-			);
-		};
-
-		const renderRecipientContent = () => {
-			if (parsedRecipients.length !== 0) return null;
-
-			return (
-				<>
-					<div className={styles.cardTip}>
-						<BiSpreadsheet className={styles.tipBulb} />
-						<div>
-						<p>Upload a CSV file with two columns "Recipient" and "Amount" for all the addresses you would like to send funds to</p>
-						<br/>
-						<p>OR</p>
-						<br/>
-						<p>Use the Add recipient button below to add recipients manually.</p>
-						<p>Amounts MUST be in usei.</p>
-						</div>
-					</div>
-					<CSVUpload onParseData={setParsedRecipients} />
-				</>
-			);
-		};
-
-		const renderAddReceipientForm = () => {
-			const handleSubmitRecipient = () => {
-				setParsedRecipients(currentRecipients =>
-					[...currentRecipients, {recipient: recipientAddress, amount: recipientAmount, denom: 'usei'}]
-				)
-				setIsPaneOpen(false);
-				setRecipientAddress('');
-				setRecipientAmount(0);
-			};
-
-			return (
-				<>
-					<Drawer
-						className={styles.card}
-						style={{background: '#2a2a2a'}}
-						open={isPaneOpen}
-						onClose={() => setIsPaneOpen((prevState) => !prevState)}
-						direction="right"
-						size="500px"
-					>
-						<h2>Add Recipient</h2>
-						<div className={styles.slidePaneContent}>
-							<div className={styles.inputWithError}>
-								<label htmlFor="recipient">Recipient Address:</label>
-								<input
-									type="text"
-									placeholder='Recipient address'
-									className={styles.input}
-									value={recipientAddress}
-									onChange={(e) => setRecipientAddress(e.target.value)}
-								/>
-								{
-									!isValidSeiAddress(recipientAddress) && <div className={styles.inputErrorText}>Please enter a valid sei address</div>
-								}
-							</div>
-							<div className={styles.inputWithError}>
-								<label htmlFor="amount">Amount:</label>
-								<input
-									type="number"
-									placeholder='amount'
-									className={styles.input}
-									value={recipientAmount}
-									onChange={(e) => setRecipientAmount(e.target.valueAsNumber)}
-								/>
-								{
-									(isNaN(recipientAmount) || recipientAmount <= 0) && <div className={styles.inputErrorText}>Please enter an amount greater than 0</div>
-								}
-							</div>
-							<button
-								className={styles.button}
-								disabled={!isValidSeiAddress(recipientAddress) || recipientAmount <= 0}
-								type="button"
-								onClick={handleSubmitRecipient}>
-								Add Recipient
-							</button>
-						</div>
-					</Drawer>
-				</>
-			)
-		}
-		const copyAddress = () => {
-			navigator.clipboard.writeText(multiSigAccount.address);
-			toast.info('Address copied to clipboard');
-		};
-
-		return (
-			<div>
-				<div className={styles.card}>
-					<div className={styles.cardHeader}>Multisig Account Info</div>
-					<div className={styles.multiSigAccountInfo}>
-						<div className={styles.textWithCopyButton}>
-							<p>Address: {multiSigAccount.address}</p>
-							<button onClick={copyAddress} className={styles.copyButton}>
-								<FaCopy /> Copy Address
-							</button>
-						</div>
-						<p>Threshold: {multiSigAccount.pubkey.value.threshold} of {multiSigAccount.pubkey.value.pubkeys.length}</p>
-					</div>
-				</div>
-				<div className={styles.card}>
-					<p className={styles.cardHeader}>Step 2: {parsedRecipients.length === 0 ? 'Select' : 'Confirm'} Recipients</p>
-					{renderRecipientContent()}
-					{renderRecipientList()}
-					{renderAddReceipientForm()}
-					<button
-						className={cn(styles.button)}
-						onClick={() => setIsPaneOpen(true)}>
-						Add recipient
-					</button>
-					<button
-						disabled={parsedRecipients?.length === 0}
-						className={cn(styles.button, { [styles.buttonReady]: parsedRecipients?.length !== 0 })}
-						onClick={() => setFinalizedRecipients(parsedRecipients)}>
-						Sign transaction
-					</button>
-				</div>
-			</div>
-			
-		);
-	};
+		return (<RecipientsPage 
+			multiSigAccount={multiSigAccount}
+			setFinalizedRecipients={setFinalizedRecipients}
+			></RecipientsPage>)
+	}
 
 	const renderSignatureInputs = () => {
 		if (!finalizedRecipients || !multiSigAccount || broadcastResponse) return null;
@@ -391,7 +256,7 @@ const MultiSig = ({}: MultiSigProps) => {
 		return (
 			<div className={styles.content}>
 				{renderMultiSigLookup()}
-				{renderCSVUpload()}
+				{renderRecipientsPage()}
 				{renderSignatureInputs()}
 				{renderBroadcastResponse()}
 			</div>

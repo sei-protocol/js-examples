@@ -2,7 +2,7 @@ import React from 'react';
 import { CSVUploadProps } from './types';
 import Papa from 'papaparse';
 import { toast } from 'react-toastify';
-import styles from './CSVUpload.module.sass';
+import addRecipientStyles from './RecipientsPage.module.sass';
 import { FaUpload } from '@react-icons/all-files/fa/FaUpload';
 
 const CSVUpload = ({ onParseData }: CSVUploadProps) => {
@@ -44,8 +44,8 @@ const CSVUpload = ({ onParseData }: CSVUploadProps) => {
 	};
 
 	return (
-		<div className={styles.csvUploadInputContainer}>
-			<label htmlFor="csvUpload" className={styles.csvUploadInputLabel}>
+		<div className={addRecipientStyles.csvUploadInputContainer}>
+			<label htmlFor="csvUpload" className={addRecipientStyles.csvUploadInputLabel}>
 				<FaUpload /> Upload CSV File
 			</label>
 			<input
@@ -53,7 +53,7 @@ const CSVUpload = ({ onParseData }: CSVUploadProps) => {
 				id="csvUpload"
 				accept=".csv"
 				onChange={handleFileUpload}
-				className={styles.csvUploadInput}
+				className={addRecipientStyles.csvUploadInput}
 			/>
 		</div>
 	);

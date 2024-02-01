@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import { InputAccount, MultiSigLookupProps } from './types';
 import styles from '../../MultiSig.module.sass';
 import multiSigLookupStyles from './MultiiSigLookup.module.sass'
