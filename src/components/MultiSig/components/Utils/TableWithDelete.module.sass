@@ -1,0 +1,35 @@
+table
+    border-collapse: collapse
+
+table thead tr th
+    border-bottom: #f1f1f111 solid 1px
+
+table th, table td
+    text-align: left
+    border-left: 1px solid rgba(0,0,0,0.2)
+    border-right: 1px solid rgba(0,0,0,0.2)
+    gap: 2rem
+    overflow-y: auto
+
+table th, table td 
+    padding: 4px 8px
+
+.deleteButton
+  background-color: #444
+  color: red
+  font-weight: 600
+  border: none
+  padding: 5px 10px
+  border-radius: 5px
+  font-size: 16px
+  cursor: pointer
+  transition: background-color 0.3s, box-shadow 0.3s
+  text-align: center
+  user-select: none
+
+  &:hover
+    background-color: #555
+
+  &:focus
+    outline: none
+    box-shadow: 0 0 8px rgba(255, 255, 255, 0.6)

@@ -19,6 +19,8 @@ import cn from 'classnames';
 import { HiTrash } from '@react-icons/all-files/hi/HiTrash';
 import Drawer from 'react-modern-drawer'
 import 'react-modern-drawer/dist/index.css'
+import MultiSigLookup from './components/MultiSigLookup/MultiSigLookup';
+import TableWithDelete from './components/Utils/TableWithDelete';
 
 
 export const truncateAddress = (address: string) => {
@@ -31,8 +33,6 @@ export const truncateAddress = (address: string) => {
 const MultiSig = ({}: MultiSigProps) => {
 	const { connectedWallet, accounts, chainId, rpcUrl } = useWallet();
 
-	const [isQueryingMultiSigAccount, setIsQueryingMultiSigAccount] = useState<boolean>(false);
-	const [multiSigAccountAddress, setMultiSigAccountAddress] = useState<string>('');
 	const [multiSigAccount, setMultiSigAccount] = useState<Account>();
 
 	const [encodedSignatureInput, setEncodedSignatureInput] = useState<string>();
@@ -54,36 +54,6 @@ const MultiSig = ({}: MultiSigProps) => {
 	}, [multiSigAccount, previousSignatures]);
 
 	const TX_FEE = calculateFee(400000, '0.1usei');
-
-	const queryMultiSigAccount = async () => {
-		if (isQueryingMultiSigAccount) return;
-		setIsQueryingMultiSigAccount(true);
-		const broadcaster = await StargateClient.connect(rpcUrl);
-		const account = await broadcaster.getAccount(multiSigAccountAddress);
-		if (!account) {
-			toast.info(`The account address you entered does not exists on chain ${chainId}.`);
-			setIsQueryingMultiSigAccount(false);
-			return;
-		}
-
-		const multiSigPubkey = account.pubkey as unknown as MultisigThresholdPubkey;
-
-		if (!multiSigPubkey) {
-			toast.info(
-				'The account address you entered is not a multi-sig account that exists on chain. You must execute a TX from this multi-sig using the CLI before using this UI.'
-			);
-			setIsQueryingMultiSigAccount(false);
-			return;
-		}
-
-		if (!isMultisigThresholdPubkey(multiSigPubkey)) {
-			toast.info('The account address you entered is not a multi-sig account that exists on chain.');
-			setIsQueryingMultiSigAccount(false);
-			return;
-		}
-		setMultiSigAccount(account);
-		setIsQueryingMultiSigAccount(false);
-	};
 
 	const sendMultiSig = async () => {
 		try {
@@ -150,7 +120,7 @@ const MultiSig = ({}: MultiSigProps) => {
 		}, {});
 
 		const inputs = Object.entries(totalAmountsByDenom).map(([denom, amount]) => ({
-			address: multiSigAccountAddress,
+			address: multiSigAccount.address,
 			coins: [{ denom, amount: amount.toString() }]
 		}));
 
@@ -187,58 +157,21 @@ const MultiSig = ({}: MultiSigProps) => {
 
 	const renderMultiSigLookup = () => {
 		if (multiSigAccount) return null;
-
-		return (
-			<div className={styles.card}>
-				<p className={styles.cardHeader}>Step 1: Lookup multi-sig account by address</p>
-				<div className={styles.cardTip}>
-					<HiLightBulb className={styles.tipBulb} />
-					<p className={styles.tipText}>Multi-sig must have signed and broadcast at least one transaction before this tool can be used.</p>
-				</div>
-				<input
-					placeholder='Multi-sig address...'
-					className={styles.input}
-					value={multiSigAccountAddress}
-					onChange={(e) => setMultiSigAccountAddress(e.target.value)}
-				/>
-				<button className={styles.button} disabled={isQueryingMultiSigAccount || !isValidSeiAddress(multiSigAccountAddress)} onClick={queryMultiSigAccount}>
-					look up account
-				</button>
-			</div>
-		);
+		return <MultiSigLookup setMultiSigAccount={setMultiSigAccount}></MultiSigLookup>
 	};
 
 	const renderCSVUpload = () => {
-		// TODO: MJ: set for testing please remove.
-		//if (!multiSigAccount) return null;
+		if (!multiSigAccount) return null;
 		if (finalizedRecipients) return null;
 
 		const renderRecipientList = () => {
 			if (parsedRecipients.length === 0) return null;
 
 			return (
-				<div className={styles.recipient}>
-					<div className={styles.recipientItem}>
-						<p>RECIPIENT</p>
-						<p>AMOUNT</p>
-					</div>
-					<div className={styles.recipientList}>
-						{parsedRecipients.length === 0 ? (
-							<p className={styles.emptySet}>No recipients added yet...</p>
-						) : (
-							parsedRecipients.map((recipient, index) => {
-								return (
-									<div key={index} className={styles.recipientItem}>
-										<p>{recipient.recipient}</p>
-										<p>
-											{recipient.amount} {recipient.denom}
-										</p>
-									</div>
-								);
-							})
-						)}
-					</div>
-				</div>
+				<TableWithDelete
+					items={parsedRecipients}
+					setItems={setParsedRecipients}>
+				</TableWithDelete>
 			);
 		};
 
@@ -323,39 +256,50 @@ const MultiSig = ({}: MultiSigProps) => {
 				</>
 			)
 		}
+		const copyAddress = () => {
+			navigator.clipboard.writeText(multiSigAccount.address);
+			toast.info('Address copied to clipboard');
+		};
 
 		return (
-			<div className={styles.card}>
-				<p className={styles.cardHeader}>Step 2: {parsedRecipients.length === 0 ? 'Select' : 'Confirm'} Recipients</p>
-				{renderRecipientContent()}
-				{renderRecipientList()}
-				{renderAddReceipientForm()}
-				<button
-					className={cn(styles.button)}
-					onClick={() => setIsPaneOpen(true)}>
-					Add recipient
-				</button>
-				<button
-					disabled={parsedRecipients?.length === 0}
-					className={cn(styles.button, { [styles.buttonReady]: parsedRecipients?.length !== 0 })}
-					onClick={() => setFinalizedRecipients(parsedRecipients)}>
-					Sign transaction
-				</button>
+			<div>
+				<div className={styles.card}>
+					<div className={styles.cardHeader}>Multisig Account Info</div>
+					<div className={styles.multiSigAccountInfo}>
+						<div className={styles.textWithCopyButton}>
+							<p>Address: {multiSigAccount.address}</p>
+							<button onClick={copyAddress} className={styles.copyButton}>
+								<FaCopy /> Copy Address
+							</button>
+						</div>
+						<p>Threshold: {multiSigAccount.pubkey.value.threshold} of {multiSigAccount.pubkey.value.pubkeys.length}</p>
+					</div>
+				</div>
+				<div className={styles.card}>
+					<p className={styles.cardHeader}>Step 2: {parsedRecipients.length === 0 ? 'Select' : 'Confirm'} Recipients</p>
+					{renderRecipientContent()}
+					{renderRecipientList()}
+					{renderAddReceipientForm()}
+					<button
+						className={cn(styles.button)}
+						onClick={() => setIsPaneOpen(true)}>
+						Add recipient
+					</button>
+					<button
+						disabled={parsedRecipients?.length === 0}
+						className={cn(styles.button, { [styles.buttonReady]: parsedRecipients?.length !== 0 })}
+						onClick={() => setFinalizedRecipients(parsedRecipients)}>
+						Sign transaction
+					</button>
+				</div>
 			</div>
+			
 		);
 	};
 
 	const renderSignatureInputs = () => {
-		// TODO: MJ: set for testing please remove.
-		// if (!finalizedRecipients || !multiSigAccount || broadcastResponse) return null;
-		// TODO: MJ: set for testing please remove.
-		if (!multiSigAccount) {
-			const pubKey = {type: "tendermint/PubKeyEd25519", value: {threshold: 2}};
-			const acc = {address: "moose", pubkey: pubKey, accountNumber: 1, sequence: 2}
-			setMultiSigAccount(acc)
-			console.log(multiSigAccount);
-		}
-		// TODO: end remove block
+		if (!finalizedRecipients || !multiSigAccount || broadcastResponse) return null;
+
 		const addSignature = () => {
 			if (encodedSignatureInput) {
 				setPreviousSignatures([...previousSignatures, encodedSignatureInput]);
@@ -367,11 +311,11 @@ const MultiSig = ({}: MultiSigProps) => {
 			<div className={styles.card}>
 				<p className={styles.cardHeader}>Step 3: Sign TX or paste other's signatures</p>
 				<p>
-					This multi-sig requires {/* TODO: MJ: set for testing please remove. multiSigAccount.pubkey.value.threshold*/ 2} signatures. Please either paste the encoded signatures from other accounts if you wish to
+					This multi-sig requires {multiSigAccount.pubkey.value.threshold} signatures. Please either paste the encoded signatures from other accounts if you wish to
 					broadcast this transaction or sign the transaction yourself and send the encoded signature to whoever will be broadcasting the transaction.
 				</p>
 				<h5>
-					{previousSignatures.length}/{/* TODO: MJ: set for testing please remove. multiSigAccount.pubkey.value.threshold*/ 2} required signatures added
+					{previousSignatures.length}/{multiSigAccount.pubkey.value.threshold} required signatures added
 				</h5>
 
 				<div className={styles.signaturesList}>
