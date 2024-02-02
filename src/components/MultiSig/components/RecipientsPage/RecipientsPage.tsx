@@ -6,15 +6,14 @@ import { toast } from 'react-toastify';
 import TableWithDelete from '../Utils/TableWithDelete';
 import { BiSpreadsheet } from '@react-icons/all-files/bi/BiSpreadsheet';
 import CSVUpload from './CSVUpload';
-import FundAccount from './FundAccount';
 import Drawer from 'react-modern-drawer'
-import { FaCopy } from '@react-icons/all-files/fa/FaCopy';
 import cn from 'classnames';
 
-const RecipientsPage = ({multiSigAccount, handleBack, setFinalizedRecipients, setParsedRecipients, parsedRecipients}: AddRecipientPageProps) => {
+const RecipientsPage = ({multiSigAccount, handleBack, setFinalizedRecipients, setParsedRecipients, parsedRecipients, setTxMemo, txMemo}: AddRecipientPageProps) => {
     const [isPaneOpen, setIsPaneOpen] = useState<boolean>(false);
 	const [recipientAddress, setRecipientAddress] = useState<string>('');
 	const [recipientAmount, setRecipientAmount] = useState<number>(0);
+    const [recipientDenom, setRecipientDenom] = useState<string>('usei');
     
     const renderRecipientsPage = () => {
         const renderRecipientList = () => {
@@ -51,12 +50,19 @@ const RecipientsPage = ({multiSigAccount, handleBack, setFinalizedRecipients, se
 
         const renderAddReceipientForm = () => {
             const handleSubmitRecipient = () => {
+                let finalAmount = recipientAmount;
+                let finalDenom = recipientDenom;
+                if(recipientDenom.toLowerCase() === 'sei') {
+                    finalDenom = 'usei'
+                    finalAmount = recipientAmount * 1000000;
+                }
                 setParsedRecipients(
-                    [...parsedRecipients, {recipient: recipientAddress, amount: recipientAmount, denom: 'usei'}]
+                    [...parsedRecipients, {recipient: recipientAddress, amount: finalAmount, denom: finalDenom}]
                 )
                 setIsPaneOpen(false);
                 setRecipientAddress('');
                 setRecipientAmount(0);
+                setRecipientDenom("usei");
             };
 
             return (
@@ -97,9 +103,19 @@ const RecipientsPage = ({multiSigAccount, handleBack, setFinalizedRecipients, se
                                     (isNaN(recipientAmount) || recipientAmount <= 0) && <div className={styles.inputErrorText}>Please enter an amount greater than 0</div>
                                 }
                             </div>
+                            <div className={styles.inputWithError}>
+                                <label htmlFor="denom">Denom:</label>
+                                <input
+                                    type="text"
+                                    placeholder='denom'
+                                    className={styles.input}
+                                    value={recipientDenom}
+                                    onChange={(e) => setRecipientDenom(e.target.value)}
+                                />
+                            </div>
                             <button
                                 className={styles.button}
-                                disabled={!isValidSeiAddress(recipientAddress) || recipientAmount <= 0}
+                                disabled={!isValidSeiAddress(recipientAddress) || recipientAmount <= 0 || !recipientDenom }
                                 type="button"
                                 onClick={handleSubmitRecipient}>
                                 Add Recipient
@@ -126,6 +142,14 @@ const RecipientsPage = ({multiSigAccount, handleBack, setFinalizedRecipients, se
                         onClick={() => setIsPaneOpen(true)}>
                         Add recipient
                     </button>
+                    <p>{"Add transaction memo (optional)"}</p>
+                    <input
+                        type="text"
+                        placeholder='Memo (Optional)'
+                        className={styles.input}
+                        value={txMemo}
+                        onChange={(e) => setTxMemo(e.target.value)}
+                    />
                     <div className={styles.backAndNextSection}>
                         <button className={styles.button} onClick={handleBack}>Back</button>
                         <button 

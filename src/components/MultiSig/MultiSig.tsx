@@ -22,6 +22,7 @@ const MultiSig = ({}: MultiSigProps) => {
 
 	const [parsedRecipients, setParsedRecipients] = useState<RecipientAmount[]>([]);
 	const [finalizedRecipients, setFinalizedRecipients] = useState<RecipientAmount[]>();
+	const [txMemo, setTxMemo] = useState<string>('');
 
 	const [broadcastResponse, setBroadcastResponse] = useState<DeliverTxResponse>();
 
@@ -47,6 +48,8 @@ const MultiSig = ({}: MultiSigProps) => {
 			multiSigAccount={activatedMultiSig}
 			handleBack={() => setActivatedMultiSig(null)}
 			parsedRecipients={parsedRecipients}
+			txMemo={txMemo}
+			setTxMemo={setTxMemo}
 			setFinalizedRecipients={setFinalizedRecipients}
 			setParsedRecipients={setParsedRecipients}
 			></RecipientsPage>)
@@ -57,6 +60,7 @@ const MultiSig = ({}: MultiSigProps) => {
 		return (<SignaturePage
 		multiSigAccount={activatedMultiSig}
 		finalizedRecipients={finalizedRecipients}
+		txMemo={txMemo}
 		handleBack={() => setFinalizedRecipients(null)}
 		previousSignatures={previousSignatures}
 		setBroadcastResponse={setBroadcastResponse}

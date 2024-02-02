@@ -21,7 +21,7 @@ export const truncateAddress = (address: string) => {
 	return `${address.slice(0, 6)}....${address.slice(address.length - 6)}`;
 };
 
-const SignaturePage = ({multiSigAccount, finalizedRecipients, handleBack, previousSignatures, setBroadcastResponse, setPreviousSignatures}: SignaturePageProps) => {
+const SignaturePage = ({multiSigAccount, finalizedRecipients, txMemo, handleBack, previousSignatures, setBroadcastResponse, setPreviousSignatures}: SignaturePageProps) => {
     const { connectedWallet, accounts, chainId, rpcUrl } = useWallet();
 	const [isBroadcasting, setIsBroadcasting] = useState<boolean>(false);
     const [encodedSignatureInput, setEncodedSignatureInput] = useState<string>();
@@ -108,7 +108,7 @@ const SignaturePage = ({multiSigAccount, finalizedRecipients, handleBack, previo
 
 		const offlineAminoSigner = await connectedWallet.getOfflineSignerAmino(chainId);
 		const signingClient = await getSigningClient(rpcUrl, offlineAminoSigner);
-		const response = await signingClient.sign(accounts[0].address, [multiSendMsg], TX_FEE, '', {
+		const response = await signingClient.sign(accounts[0].address, [multiSendMsg], TX_FEE, txMemo, {
 			accountNumber: multiSigAccount.accountNumber,
 			sequence: multiSigAccount.sequence,
 			chainId

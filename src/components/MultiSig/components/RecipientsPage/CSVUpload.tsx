@@ -16,6 +16,7 @@ const CSVUpload = ({ onParseData }: CSVUploadProps) => {
 			complete: (result) => {
 				console.log('result', result)
 				const isValidFormat = result.meta.fields.includes('Recipient') && result.meta.fields.includes('Amount') && result.meta.fields.includes('Denom');
+				const hasMemo = result.meta.fields.includes('Memo');
 
 				if (!isValidFormat) {
 					toast.error("Invalid CSV format");
@@ -27,7 +28,8 @@ const CSVUpload = ({ onParseData }: CSVUploadProps) => {
 					let returnData = {
 						recipient: row['Recipient'],
 						denom: row['Denom'],
-						amount: parseFloat(row['Amount'])
+						amount: parseFloat(row['Amount']),
+						memo: hasMemo ? row['Memo'] : ""
 					};
 
 					if(row['Denom'].toLowerCase() === 'sei') {
