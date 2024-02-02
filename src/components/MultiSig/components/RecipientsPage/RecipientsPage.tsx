@@ -6,12 +6,12 @@ import { toast } from 'react-toastify';
 import TableWithDelete from '../Utils/TableWithDelete';
 import { BiSpreadsheet } from '@react-icons/all-files/bi/BiSpreadsheet';
 import CSVUpload from './CSVUpload';
+import FundAccount from './FundAccount';
 import Drawer from 'react-modern-drawer'
 import { FaCopy } from '@react-icons/all-files/fa/FaCopy';
 import cn from 'classnames';
 
-const RecipientsPage = ({multiSigAccount, setFinalizedRecipients}: AddRecipientPageProps) => {
-    const [parsedRecipients, setParsedRecipients] = useState<RecipientAmount[]>([]);
+const RecipientsPage = ({multiSigAccount, handleBack, setFinalizedRecipients, setParsedRecipients, parsedRecipients}: AddRecipientPageProps) => {
     const [isPaneOpen, setIsPaneOpen] = useState<boolean>(false);
 	const [recipientAddress, setRecipientAddress] = useState<string>('');
 	const [recipientAmount, setRecipientAmount] = useState<number>(0);
@@ -51,8 +51,8 @@ const RecipientsPage = ({multiSigAccount, setFinalizedRecipients}: AddRecipientP
 
         const renderAddReceipientForm = () => {
             const handleSubmitRecipient = () => {
-                setParsedRecipients(currentRecipients =>
-                    [...currentRecipients, {recipient: recipientAddress, amount: recipientAmount, denom: 'usei'}]
+                setParsedRecipients(
+                    [...parsedRecipients, {recipient: recipientAddress, amount: recipientAmount, denom: 'usei'}]
                 )
                 setIsPaneOpen(false);
                 setRecipientAddress('');
@@ -117,19 +117,7 @@ const RecipientsPage = ({multiSigAccount, setFinalizedRecipients}: AddRecipientP
         return (
             <div>
                 <div className={styles.card}>
-                    <div className={styles.cardHeader}>Multisig Account Info</div>
-                    <div className={styles.multiSigAccountInfo}>
-                        <div className={styles.textWithCopyButton}>
-                            <p>Address: {multiSigAccount.address}</p>
-                            <button onClick={copyAddress} className={styles.copyButton}>
-                                <FaCopy /> Copy Address
-                            </button>
-                        </div>
-                        <p>Threshold: {multiSigAccount.pubkey.value.threshold} of {multiSigAccount.pubkey.value.pubkeys.length}</p>
-                    </div>
-                </div>
-                <div className={styles.card}>
-                    <p className={styles.cardHeader}>Step 2: {parsedRecipients.length === 0 ? 'Select' : 'Confirm'} Recipients</p>
+                    <p className={styles.cardHeader}>Step 3: {parsedRecipients.length === 0 ? 'Select' : 'Confirm'} Recipients</p>
                     {renderRecipientContent()}
                     {renderRecipientList()}
                     {renderAddReceipientForm()}
@@ -138,12 +126,13 @@ const RecipientsPage = ({multiSigAccount, setFinalizedRecipients}: AddRecipientP
                         onClick={() => setIsPaneOpen(true)}>
                         Add recipient
                     </button>
-                    <button
-                        disabled={parsedRecipients?.length === 0}
-                        className={cn(styles.button, { [styles.buttonReady]: parsedRecipients?.length !== 0 })}
-                        onClick={() => setFinalizedRecipients(parsedRecipients)}>
-                        Sign transaction
-                    </button>
+                    <div className={styles.backAndNextSection}>
+                        <button className={styles.button} onClick={handleBack}>Back</button>
+                        <button 
+                            disabled={parsedRecipients?.length === 0}
+                            className={cn(styles.button, { [styles.buttonReady]: parsedRecipients?.length !== 0 })}
+                            onClick={() => setFinalizedRecipients(parsedRecipients)}>Next</button>
+                    </div>
                 </div>
             </div>
             

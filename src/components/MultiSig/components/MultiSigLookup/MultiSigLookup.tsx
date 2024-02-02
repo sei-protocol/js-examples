@@ -6,16 +6,17 @@ import { StargateClient } from '@cosmjs/stargate';
 import { isValidSeiAddress } from '@sei-js/core';
 import { HiLightBulb } from '@react-icons/all-files/hi/HiLightBulb';
 import { useWallet } from '@sei-js/react';
-import { isMultisigThresholdPubkey, MultisigThresholdPubkey, pubkeyToAddress, createMultisigThresholdPubkey } from '@cosmjs/amino';
+import { isMultisigThresholdPubkey, MultisigThresholdPubkey, pubkeyToAddress, createMultisigThresholdPubkey, Secp256k1Pubkey } from '@cosmjs/amino';
 import { toast } from 'react-toastify';
 import TableWithDelete from '../Utils/TableWithDelete';
+import { RecipientAmount } from '../RecipientsPage/types';
 
 const MultiSigLookup = ({setMultiSigAccount}: MultiSigLookupProps) => {
     const [lookupMultiSig, setLookupMultiSig] = useState<boolean>(false);
     const [createNewMultiSig, setCreateNewMultiSig] = useState<boolean>(false);
     const [isQueryingMultiSigAccount, setIsQueryingMultiSigAccount] = useState<boolean>(false);
     const [multiSigAccountAddress, setMultiSigAccountAddress] = useState<string>('');
-
+    const [parsedRecipients, setParsedRecipients] = useState<RecipientAmount[]>([]);
     const [newMultiSigAccountInput, setNewMultiSigAccountInput] = useState<string>('');
     const [inputtedAccounts, setInputtedAccounts] = useState<InputAccount[]>([]);
     const [inputError, setInputError] = useState<string>('');
@@ -32,7 +33,27 @@ const MultiSigLookup = ({setMultiSigAccount}: MultiSigLookupProps) => {
 
     const queryMultiSigAccount = async () => {
         // TODO TEST CODE MUST REMOVE
-        // const account2 = {address: multiSigAccountAddress, pubkey: null, accountNumber: 0, sequence: 0}
+        // const account2 = {
+        //     address: "sei196wjm5sdzgfulgt6aut6fp7jw20dgmall7wr5z",
+        //     pubkey: {
+        //         type: "tendermint/PubKeyMultisigThreshold",
+        //         value: {
+        //             threshold: "1",
+        //             pubkeys: [
+        //                 {
+        //                     type: "tendermint/PubKeySecp256k1",
+        //                     value: "A8xQ4g6lU37NFfRp3P81BTzeUH78ta1c9KBtkdoyuvm/"
+        //                 },
+        //                 {
+        //                     type: "tendermint/PubKeySecp256k1",
+        //                     value: "A8xQ4g6lU37NFfRp3P81BTzeUH78ta1c9KBtkdoyuvm/"
+        //                 }
+        //             ]
+        //         }
+        //     },
+        //     accountNumber: 1,
+        //     sequence: 1
+        // }
         // setMultiSigAccount(account2)
         // return;
 		if (isQueryingMultiSigAccount) return;
@@ -49,7 +70,8 @@ const MultiSigLookup = ({setMultiSigAccount}: MultiSigLookupProps) => {
 
 		if (!multiSigPubkey) {
 			toast.info(
-				'The account address you entered is not a multi-sig account that exists on chain. You must execute a TX from this multi-sig using the CLI before using this UI.'
+				'The account address you entered is not a multi-sig account that exists on chain. You must execute a TX from this multi-sig using the CLI before using this UI.' +
+                '\nAlternatively, you can recreate the multisig account using this UI by inputting the signer addresses or pubkeys.'
 			);
 			setIsQueryingMultiSigAccount(false);
 			return;
@@ -78,8 +100,9 @@ const MultiSigLookup = ({setMultiSigAccount}: MultiSigLookupProps) => {
             pubkey: multisigPubkey,
             // TODO: To figure out acc number and sequence
             accountNumber: 1,
-            sequence: 1
+            sequence: 0
         }
+        console.log(account);
         setMultiSigAccount(account);
     }
 
@@ -180,6 +203,11 @@ const MultiSigLookup = ({setMultiSigAccount}: MultiSigLookupProps) => {
                 newAccount = {address: newMultiSigAccountInput, pubkey: pubKey}
             } else {
                 newAccount.pubkey = newMultiSigAccountInput;
+                const pubKey: Secp256k1Pubkey = {
+                    value: newMultiSigAccountInput,
+                    type: 'tendermint/PubKeySecp256k1'
+                };
+                newAccount.address = pubkeyToAddress(pubKey, "sei")
             }
             setInputtedAccounts(inputtedAccounts =>
                 [...inputtedAccounts, newAccount]
@@ -258,7 +286,7 @@ const MultiSigLookup = ({setMultiSigAccount}: MultiSigLookupProps) => {
                     </div>
                     <p>This means that each transaction this multisig makes will only require {multiSigThreshold} of the {inputtedAccounts.length} members to sign it for it to be accepted by the validators.</p>
                 </div>
-                <button className={styles.button} disabled={inputtedAccounts.length < 2} onClick={createMultiSigAccount}>
+                <button className={styles.button} disabled={inputtedAccounts.length < 2 || multiSigThreshold < 1} onClick={createMultiSigAccount}>
                     Create Multi-Sig Account
                 </button>
             </div>
@@ -267,7 +295,6 @@ const MultiSigLookup = ({setMultiSigAccount}: MultiSigLookupProps) => {
 
     const renderMultiSigAccountComponent = () => {
         if (!lookupMultiSig && !createNewMultiSig) {
-            console.log('here')
             return renderMultiSigSelectAccountComponent();
         }
         else if (lookupMultiSig) {
