@@ -16,7 +16,7 @@ const TableWithDelete = ({items, setItems}: TableWithDeleteProps) => {
                 ) : (
                     <table>
                         <thead className={tableStyles.thead}>
-                            <tr className={tableStyles.tr}>{Object.entries(items[0]).map((pair, index) => {
+                            <tr key={"head"} className={tableStyles.tr}>{Object.entries(items[0]).map((pair, index) => {
                                 return <th key={index}>{pair[0].toUpperCase()}</th>
                             })}
                             </tr>

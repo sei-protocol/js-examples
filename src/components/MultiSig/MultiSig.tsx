@@ -9,13 +9,15 @@ import MultiSigLookup from './components/MultiSigLookup/MultiSigLookup';
 import RecipientsPage from './components/RecipientsPage/RecipientsPage';
 import SignaturePage from './components/SignaturePage/SignaturePage';
 import FundAccount from './components/RecipientsPage/FundAccount';
+import { InputAccount } from './components/MultiSigLookup/types';
 
 const MultiSig = ({}: MultiSigProps) => {
 	const { connectedWallet, accounts, chainId, rpcUrl } = useWallet();
 
 	const [multiSigAccount, setMultiSigAccount] = useState<Account>();
 	const [activatedMultiSig, setActivatedMultiSig] = useState<Account>();
-
+    const [inputtedAccounts, setInputtedAccounts] = useState<InputAccount[]>([]);
+	const [multiSigThreshold, setMultiSigThreshold] = useState<number>(0);
 	const [previousSignatures, setPreviousSignatures] = useState<string[]>([]);
 
 	const [parsedRecipients, setParsedRecipients] = useState<RecipientAmount[]>([]);
@@ -25,7 +27,12 @@ const MultiSig = ({}: MultiSigProps) => {
 
 	const renderMultiSigLookup = () => {
 		if (multiSigAccount) return null;
-		return <MultiSigLookup setMultiSigAccount={setMultiSigAccount}></MultiSigLookup>
+		return <MultiSigLookup
+			setMultiSigAccount={setMultiSigAccount}
+			inputtedAccounts={inputtedAccounts}
+			setInputtedAccounts={setInputtedAccounts}
+			multiSigThreshold={multiSigThreshold}
+			setMultiSigThreshold={setMultiSigThreshold}></MultiSigLookup>
 	};
 
 	const renderMultisigInfoPage = () => {

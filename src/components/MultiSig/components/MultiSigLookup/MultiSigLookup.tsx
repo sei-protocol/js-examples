@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { InputAccount, MultiSigLookupProps } from './types';
+import { MultiSigLookupProps } from './types';
 import styles from '../../MultiSig.module.sass';
 import multiSigLookupStyles from './MultiiSigLookup.module.sass'
 import { StargateClient } from '@cosmjs/stargate';
@@ -9,19 +9,14 @@ import { useWallet } from '@sei-js/react';
 import { isMultisigThresholdPubkey, MultisigThresholdPubkey, pubkeyToAddress, createMultisigThresholdPubkey, Secp256k1Pubkey } from '@cosmjs/amino';
 import { toast } from 'react-toastify';
 import TableWithDelete from '../Utils/TableWithDelete';
-import { RecipientAmount } from '../RecipientsPage/types';
 
-const MultiSigLookup = ({setMultiSigAccount}: MultiSigLookupProps) => {
+const MultiSigLookup = ({setMultiSigAccount, inputtedAccounts, setInputtedAccounts, multiSigThreshold, setMultiSigThreshold}: MultiSigLookupProps) => {
     const [lookupMultiSig, setLookupMultiSig] = useState<boolean>(false);
     const [createNewMultiSig, setCreateNewMultiSig] = useState<boolean>(false);
     const [isQueryingMultiSigAccount, setIsQueryingMultiSigAccount] = useState<boolean>(false);
     const [multiSigAccountAddress, setMultiSigAccountAddress] = useState<string>('');
-    const [parsedRecipients, setParsedRecipients] = useState<RecipientAmount[]>([]);
     const [newMultiSigAccountInput, setNewMultiSigAccountInput] = useState<string>('');
-    const [inputtedAccounts, setInputtedAccounts] = useState<InputAccount[]>([]);
     const [inputError, setInputError] = useState<string>('');
-    const [multiSigThreshold, setMultiSigThreshold] = useState<number>(0);
-
     
     // The state that determines whether the user is inputting pubkey.
     enum InputType {
@@ -98,7 +93,7 @@ const MultiSigLookup = ({setMultiSigAccount}: MultiSigLookupProps) => {
           const account = {
             address: multisigAddress,
             pubkey: multisigPubkey,
-            // TODO: To figure out acc number and sequence
+            // Account number must be overridden by making querying account on Node once activated.
             accountNumber: 1,
             sequence: 0
         }
@@ -115,14 +110,17 @@ const MultiSigLookup = ({setMultiSigAccount}: MultiSigLookupProps) => {
                     <p className={styles.tipText}>Multi-sig must have signed and broadcast at least one transaction before this tool can be used.</p>
                 </div>
                 <input
-                    placeholder='Multi-sig address...'
+                    placeholder='Enter Multi-sig address...'
                     className={styles.input}
                     value={multiSigAccountAddress}
                     onChange={(e) => setMultiSigAccountAddress(e.target.value)}
                 />
-                <button className={styles.button} disabled={isQueryingMultiSigAccount || !isValidSeiAddress(multiSigAccountAddress)} onClick={queryMultiSigAccount}>
-                    look up account
-                </button>
+                <div className={styles.backAndNextSection}>
+                    <button className={styles.button} onClick={() => setLookupMultiSig(false)}>Back</button>
+                    <button className={styles.button} disabled={isQueryingMultiSigAccount || !isValidSeiAddress(multiSigAccountAddress)} onClick={queryMultiSigAccount}>
+                        Next
+                    </button>
+                </div>
             </div>
         );
     };
@@ -209,7 +207,7 @@ const MultiSigLookup = ({setMultiSigAccount}: MultiSigLookupProps) => {
                 };
                 newAccount.address = pubkeyToAddress(pubKey, "sei")
             }
-            setInputtedAccounts(inputtedAccounts =>
+            setInputtedAccounts(
                 [...inputtedAccounts, newAccount]
             );
 
@@ -286,9 +284,12 @@ const MultiSigLookup = ({setMultiSigAccount}: MultiSigLookupProps) => {
                     </div>
                     <p>This means that each transaction this multisig makes will only require {multiSigThreshold} of the {inputtedAccounts.length} members to sign it for it to be accepted by the validators.</p>
                 </div>
-                <button className={styles.button} disabled={inputtedAccounts.length < 2 || multiSigThreshold < 1} onClick={createMultiSigAccount}>
-                    Create Multi-Sig Account
-                </button>
+                <div className={styles.backAndNextSection}>
+                    <button className={styles.button} onClick={() => setCreateNewMultiSig(false)}>Back</button>
+                    <button className={styles.button} disabled={inputtedAccounts.length < 2 || multiSigThreshold < 1} onClick={createMultiSigAccount}>
+                        Create
+                    </button>
+                </div>
             </div>
         );
     }
