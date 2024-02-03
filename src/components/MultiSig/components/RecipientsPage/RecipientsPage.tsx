@@ -34,13 +34,10 @@ const RecipientsPage = ({multiSigAccount, handleBack, setFinalizedRecipients, se
                 <>
                     <div className={styles.cardTip}>
                         <BiSpreadsheet className={styles.tipBulb} />
-                        <div>
-                        <p>Upload a CSV file with two columns "Recipient" and "Amount" for all the addresses you would like to send funds to</p>
-                        <br/>
-                        <p>OR</p>
-                        <br/>
-                        <p>Use the Add recipient button below to add recipients manually.</p>
-                        <p>Amounts MUST be in usei.</p>
+                        <div className={styles.tipContent}>
+                            <p>Upload a CSV file with two columns "Recipient" and "Amount" for all the addresses you would like to send funds to</p>
+                            <p>OR</p>
+                            <p>Use the 'Add recipient' button below to add recipients manually.</p>
                         </div>
                     </div>
                     <CSVUpload onParseData={setParsedRecipients} />

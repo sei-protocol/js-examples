@@ -57,14 +57,15 @@ const MultiSig = ({}: MultiSigProps) => {
 
 	const renderSignatureInputs = () => {
 		if (!finalizedRecipients || !activatedMultiSig || broadcastResponse) return null;
-		return (<SignaturePage
-		multiSigAccount={activatedMultiSig}
-		finalizedRecipients={finalizedRecipients}
-		txMemo={txMemo}
-		handleBack={() => setFinalizedRecipients(null)}
-		previousSignatures={previousSignatures}
-		setBroadcastResponse={setBroadcastResponse}
-		setPreviousSignatures={setPreviousSignatures}>
+		return (
+		<SignaturePage
+			multiSigAccount={activatedMultiSig}
+			finalizedRecipients={finalizedRecipients}
+			txMemo={txMemo}
+			handleBack={() => setFinalizedRecipients(null)}
+			previousSignatures={previousSignatures}
+			setBroadcastResponse={setBroadcastResponse}
+			setPreviousSignatures={setPreviousSignatures}>
 		</SignaturePage>)
 	}	
 

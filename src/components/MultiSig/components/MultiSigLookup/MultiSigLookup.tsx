@@ -11,13 +11,19 @@ import { toast } from 'react-toastify';
 import TableWithDelete from '../Utils/TableWithDelete';
 
 const MultiSigLookup = ({setMultiSigAccount, inputtedAccounts, setInputtedAccounts, multiSigThreshold, setMultiSigThreshold}: MultiSigLookupProps) => {
-    const [lookupMultiSig, setLookupMultiSig] = useState<boolean>(false);
-    const [createNewMultiSig, setCreateNewMultiSig] = useState<boolean>(false);
     const [isQueryingMultiSigAccount, setIsQueryingMultiSigAccount] = useState<boolean>(false);
     const [multiSigAccountAddress, setMultiSigAccountAddress] = useState<string>('');
     const [newMultiSigAccountInput, setNewMultiSigAccountInput] = useState<string>('');
     const [inputError, setInputError] = useState<string>('');
     
+    enum LookupType {
+        Select,
+        Lookup,
+        Create
+    }
+
+    const [lookupType, setLookupType] = useState<LookupType>(LookupType.Select)
+
     // The state that determines whether the user is inputting pubkey.
     enum InputType {
         Address,
@@ -116,7 +122,7 @@ const MultiSigLookup = ({setMultiSigAccount, inputtedAccounts, setInputtedAccoun
                     onChange={(e) => setMultiSigAccountAddress(e.target.value)}
                 />
                 <div className={styles.backAndNextSection}>
-                    <button className={styles.button} onClick={() => setLookupMultiSig(false)}>Back</button>
+                    <button className={styles.button} onClick={() => setLookupType(LookupType.Select)}>Back</button>
                     <button className={styles.button} disabled={isQueryingMultiSigAccount || !isValidSeiAddress(multiSigAccountAddress)} onClick={queryMultiSigAccount}>
                         Next
                     </button>
@@ -130,12 +136,12 @@ const MultiSigLookup = ({setMultiSigAccount, inputtedAccounts, setInputtedAccoun
             <div className={styles.card}>
                 <p className={styles.cardHeader}>Step 1: Select multi-sig account</p>
                 <div>
-                    <button className={styles.button} onClick={() => setLookupMultiSig(true)}>
+                    <button className={styles.button} onClick={() => setLookupType(LookupType.Lookup)}>
                         Lookup multi-sig account by address
                     </button>
                 </div>
                 <div>
-                    <button className={styles.button} onClick={() => setCreateNewMultiSig(true)}>
+                    <button className={styles.button} onClick={() => setLookupType(LookupType.Create)}>
                         Create new multisig account
                     </button>
                 </div>
@@ -243,11 +249,14 @@ const MultiSigLookup = ({setMultiSigAccount, inputtedAccounts, setInputtedAccoun
                 <p className={styles.cardHeader}>Step 1: Create multi-sig account</p>
                 <div className={styles.cardTip}>
                     <HiLightBulb className={styles.tipBulb} />
-                    <p>
-                        Wallet must have signed and broadcast at least one transaction before it can be used.
-                        <br/><br/>
-                        Otherwise, input public key of account.
-                    </p>
+                    <div>
+                        <p>
+                            Wallet must have signed and broadcast at least one transaction before it can be used.
+                        </p>
+                        <p>
+                            Otherwise, input public key of account.
+                        </p>
+                    </div>
                 </div>
                 <TableWithDelete
                     items={inputtedAccounts}
@@ -285,7 +294,7 @@ const MultiSigLookup = ({setMultiSigAccount, inputtedAccounts, setInputtedAccoun
                     <p>This means that each transaction this multisig makes will only require {multiSigThreshold} of the {inputtedAccounts.length} members to sign it for it to be accepted by the validators.</p>
                 </div>
                 <div className={styles.backAndNextSection}>
-                    <button className={styles.button} onClick={() => setCreateNewMultiSig(false)}>Back</button>
+                    <button className={styles.button} onClick={() => setLookupType(LookupType.Select)}>Back</button>
                     <button className={styles.button} disabled={inputtedAccounts.length < 2 || multiSigThreshold < 1} onClick={createMultiSigAccount}>
                         Create
                     </button>
@@ -295,14 +304,14 @@ const MultiSigLookup = ({setMultiSigAccount, inputtedAccounts, setInputtedAccoun
     }
 
     const renderMultiSigAccountComponent = () => {
-        if (!lookupMultiSig && !createNewMultiSig) {
-            return renderMultiSigSelectAccountComponent();
-        }
-        else if (lookupMultiSig) {
-            return renderMultiSigLookup();
-        }
-        else {
-            return renderMultiSigCreate();
+        switch (lookupType) {
+            case (LookupType.Lookup):
+                return renderMultiSigLookup();
+            case (LookupType.Create):
+                return renderMultiSigCreate();
+            case (LookupType.Select):
+            default:
+                return renderMultiSigSelectAccountComponent();
         }
     }
 

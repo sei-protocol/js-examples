@@ -156,9 +156,8 @@ const FundAccount = ({multiSigAccount, handleBack, setActivatedMultiSig}: FundAc
                 <div className={styles.cardHeader}>Step 2: Fund Multisig Account</div>
                 <div className={styles.cardTip}>
                     <HiLightBulb className={styles.tipBulb} />
-                    <div>
+                    <div className={styles.tipContent}>
                         <p>If this is a newly created multisig, you need to activate it by transferring funds to it before it can be used in this tool.</p>
-                        <br/>
                         <p>If you leave this page before sending a transaction, you will need to re-create the account using the UI in step 1 by inputting the signer pubkeys and threshold value below.</p>
                     </div>
                 </div>
@@ -173,7 +172,6 @@ const FundAccount = ({multiSigAccount, handleBack, setActivatedMultiSig}: FundAc
                         return (
                             <div className={styles.textWithCopyButton}>
                                 <p>Signer {index} Address: {pubkeyToAddress(pubkey, "sei")}</p>
-                                <br/>
                                 <p>Pubkey:  {pubkey.value}</p>
                                 <button onClick={() => copyString(pubkey.value)} className={styles.copyButton}>
                                     <FaCopy /> Copy Pubkey
