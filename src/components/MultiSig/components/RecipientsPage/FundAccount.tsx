@@ -9,6 +9,8 @@ import { useSigningClient, useWallet } from '@sei-js/react';
 import { calculateFee, StargateClient } from '@cosmjs/stargate';
 import Drawer from 'react-modern-drawer'
 import { Coin } from '@sei-js/proto/dist/types/codegen/cosmos/base/v1beta1/coin';
+import { pubkeyToAddress } from '@cosmjs/amino';
+import { SeiToUsei } from '../Utils/utils';
 
 
 const FundAccount = ({multiSigAccount, handleBack, setActivatedMultiSig}: FundAccountProps) => {
@@ -30,9 +32,9 @@ const FundAccount = ({multiSigAccount, handleBack, setActivatedMultiSig}: FundAc
             setHoldings(tempHoldings);
         }
 
-        const copyAddress = () => {
-            navigator.clipboard.writeText(multiSigAccount.address);
-            toast.info('Address copied to clipboard');
+        const copyString = (s: string) => {
+            navigator.clipboard.writeText(s);
+            toast.info('Copied to clipboard');
         };
 
         const sendFunds = async () => {
@@ -45,7 +47,13 @@ const FundAccount = ({multiSigAccount, handleBack, setActivatedMultiSig}: FundAc
                 return;
             }
             const fee = calculateFee(120000, '0.1usei');
-            const transferAmount = { amount: sendAmount, denom: sendDenom };
+            let finalAmount = sendAmount;
+            let finalDenom = sendDenom;
+            if (sendDenom.toLowerCase() == 'sei') {
+                finalDenom = 'usei';
+                finalAmount = SeiToUsei(Number(sendAmount)).toString();
+            }
+            const transferAmount = { amount: finalAmount, denom: finalDenom };
     
             try {
                 setIsSending(true);
@@ -132,10 +140,10 @@ const FundAccount = ({multiSigAccount, handleBack, setActivatedMultiSig}: FundAc
                             </div>
                             <button
                                 className={styles.button}
-                                disabled={ !isValidAmount() || sendDenom == ""}
+                                disabled={ !isValidAmount() || sendDenom == "" || !isSending }
                                 type="button"
                                 onClick={handleSubmitFundAccountForm}>
-                                Send Funds
+                                { isSending ? 'Sending...' : 'Send Funds' }
                             </button>
                         </div>
                     </Drawer>
@@ -157,17 +165,17 @@ const FundAccount = ({multiSigAccount, handleBack, setActivatedMultiSig}: FundAc
                 <div className={styles.multiSigAccountInfoCard}>
                     <div className={styles.textWithCopyButton}>
                         <p>MultiSig Address: {multiSigAccount.address}</p>
-                        <button onClick={copyAddress} className={styles.copyButton}>
+                        <button onClick={() => copyString(multiSigAccount.address)} className={styles.copyButton}>
                             <FaCopy /> Copy Address
                         </button>
                     </div>
                     { multiSigAccount.pubkey.value.pubkeys.map((pubkey, index) => {
                         return (
                             <div className={styles.textWithCopyButton}>
-                                <p>Signer {index} Type: {pubkey.type}</p>
+                                <p>Signer {index} Address: {pubkeyToAddress(pubkey, "sei")}</p>
                                 <br/>
                                 <p>Pubkey:  {pubkey.value}</p>
-                                <button onClick={copyAddress} className={styles.copyButton}>
+                                <button onClick={() => copyString(pubkey.value)} className={styles.copyButton}>
                                     <FaCopy /> Copy Pubkey
                                 </button>
                             </div>
