@@ -2,7 +2,7 @@ import React from 'react';
 import { CSVUploadProps } from './types';
 import Papa from 'papaparse';
 import { toast } from 'react-toastify';
-import styles from './CSVUpload.module.sass';
+import addRecipientStyles from './RecipientsPage.module.sass';
 import { FaUpload } from '@react-icons/all-files/fa/FaUpload';
 
 const CSVUpload = ({ onParseData }: CSVUploadProps) => {
@@ -16,6 +16,7 @@ const CSVUpload = ({ onParseData }: CSVUploadProps) => {
 			complete: (result) => {
 				console.log('result', result)
 				const isValidFormat = result.meta.fields.includes('Recipient') && result.meta.fields.includes('Amount') && result.meta.fields.includes('Denom');
+				const hasMemo = result.meta.fields.includes('Memo');
 
 				if (!isValidFormat) {
 					toast.error("Invalid CSV format");
@@ -27,7 +28,8 @@ const CSVUpload = ({ onParseData }: CSVUploadProps) => {
 					let returnData = {
 						recipient: row['Recipient'],
 						denom: row['Denom'],
-						amount: parseFloat(row['Amount'])
+						amount: parseFloat(row['Amount']),
+						memo: hasMemo ? row['Memo'] : ""
 					};
 
 					if(row['Denom'].toLowerCase() === 'sei') {
@@ -44,8 +46,8 @@ const CSVUpload = ({ onParseData }: CSVUploadProps) => {
 	};
 
 	return (
-		<div className={styles.csvUploadInputContainer}>
-			<label htmlFor="csvUpload" className={styles.csvUploadInputLabel}>
+		<div className={addRecipientStyles.csvUploadInputContainer}>
+			<label htmlFor="csvUpload" className={addRecipientStyles.csvUploadInputLabel}>
 				<FaUpload /> Upload CSV File
 			</label>
 			<input
@@ -53,7 +55,7 @@ const CSVUpload = ({ onParseData }: CSVUploadProps) => {
 				id="csvUpload"
 				accept=".csv"
 				onChange={handleFileUpload}
-				className={styles.csvUploadInput}
+				className={addRecipientStyles.csvUploadInput}
 			/>
 		</div>
 	);
