@@ -6,7 +6,6 @@ import addRecipientStyles from './RecipientsPage.module.sass';
 import { FaUpload } from '@react-icons/all-files/fa/FaUpload';
 
 const CSVUpload = ({ onParseData }: CSVUploadProps) => {
-
 	const handleFileUpload = (e) => {
 		const file = e.target.files[0];
 
@@ -14,25 +13,25 @@ const CSVUpload = ({ onParseData }: CSVUploadProps) => {
 			header: true,
 			skipEmptyLines: true,
 			complete: (result) => {
-				console.log('result', result)
+				console.log('result', result);
 				const isValidFormat = result.meta.fields.includes('Recipient') && result.meta.fields.includes('Amount') && result.meta.fields.includes('Denom');
 				const hasMemo = result.meta.fields.includes('Memo');
 
 				if (!isValidFormat) {
-					toast.error("Invalid CSV format");
+					toast.error('Invalid CSV format');
 					// Handle invalid format
 					return;
 				}
 
-				const formattedData = result.data.map(row => {
+				const formattedData = result.data.map((row) => {
 					let returnData = {
 						recipient: row['Recipient'],
 						denom: row['Denom'],
 						amount: parseFloat(row['Amount']),
-						memo: hasMemo ? row['Memo'] : ""
+						memo: hasMemo ? row['Memo'] : ''
 					};
 
-					if(row['Denom'].toLowerCase() === 'sei') {
+					if (row['Denom'].toLowerCase() === 'sei') {
 						returnData.amount = returnData.amount * 1000000;
 						returnData.denom = 'usei';
 					}
@@ -47,16 +46,10 @@ const CSVUpload = ({ onParseData }: CSVUploadProps) => {
 
 	return (
 		<div className={addRecipientStyles.csvUploadInputContainer}>
-			<label htmlFor="csvUpload" className={addRecipientStyles.csvUploadInputLabel}>
+			<label htmlFor='csvUpload' className={addRecipientStyles.csvUploadInputLabel}>
 				<FaUpload /> Upload CSV File
 			</label>
-			<input
-				type="file"
-				id="csvUpload"
-				accept=".csv"
-				onChange={handleFileUpload}
-				className={addRecipientStyles.csvUploadInput}
-			/>
+			<input type='file' id='csvUpload' accept='.csv' onChange={handleFileUpload} className={addRecipientStyles.csvUploadInput} />
 		</div>
 	);
 };

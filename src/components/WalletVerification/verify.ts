@@ -10,24 +10,18 @@ interface KeyAndIv {
 }
 
 async function getKeyAndIv(password: string): Promise<KeyAndIv> {
-	const keyMaterial = await crypto.subtle.importKey(
-		"raw",
-		new TextEncoder().encode(password),
-		"PBKDF2",
-		false,
-		["deriveKey"]
-	);
+	const keyMaterial = await crypto.subtle.importKey('raw', new TextEncoder().encode(password), 'PBKDF2', false, ['deriveKey']);
 	const key = await crypto.subtle.deriveKey(
 		{
-			"name": "PBKDF2",
+			name: 'PBKDF2',
 			salt: STATIC_SALT,
 			iterations: ITERATIONS,
-			hash: "SHA-256"
+			hash: 'SHA-256'
 		},
 		keyMaterial,
 		{ name: ALGORITHM, length: 256 },
 		true,
-		["encrypt", "decrypt"]
+		['encrypt', 'decrypt']
 	);
 	const iv = crypto.getRandomValues(new Uint8Array(12));
 	return { key, iv };
@@ -54,11 +48,11 @@ export async function signObject(data: Record<string, any>): Promise<string> {
 }
 
 export async function verifyObject(data: Record<string, any>, encryptedData: string): Promise<boolean> {
-	const encryptedArray = Uint8Array.from(atob(encryptedData), c => c.charCodeAt(0));
+	const encryptedArray = Uint8Array.from(atob(encryptedData), (c) => c.charCodeAt(0));
 	const iv = encryptedArray.slice(0, 12);
 	const dataPart = encryptedArray.slice(12);
 
-	console.log('AES_KEY', AES_KEY)
+	console.log('AES_KEY', AES_KEY);
 	const { key } = await getKeyAndIv(AES_KEY);
 
 	try {
@@ -73,7 +67,7 @@ export async function verifyObject(data: Record<string, any>, encryptedData: str
 
 		return new TextDecoder().decode(decrypted) === JSON.stringify(data);
 	} catch (error) {
-		console.error("Decryption failed:", error);
+		console.error('Decryption failed:', error);
 		return false;
 	}
 }

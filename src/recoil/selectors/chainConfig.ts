@@ -7,14 +7,14 @@ export const selectedChainConfigSelector = selector<ChainConfiguration>({
 	key: 'selectedChainConfigSelector',
 	get: ({ get }) => {
 		const selectedChainConfig = get(selectedChainConfigAtom);
-		if(selectedChainConfig === PACIFIC_1) {
+		if (selectedChainConfig === PACIFIC_1) {
 			return {
 				chainId: selectedChainConfig,
 				restUrl: `https://rest.wallet.${selectedChainConfig}.sei.io`,
 				rpcUrl: `https://rpc.wallet.${selectedChainConfig}.sei.io`
 			};
 		}
-		if(selectedChainConfig !== CUSTOM) {
+		if (selectedChainConfig !== CUSTOM) {
 			return {
 				chainId: selectedChainConfig,
 				restUrl: `https://rest.${selectedChainConfig}.seinetwork.io`,

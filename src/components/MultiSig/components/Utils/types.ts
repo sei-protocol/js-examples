@@ -1,4 +1,4 @@
 export type TableWithDeleteProps = {
-    items: any[];
-    setItems: (items: any[]) => void;
+	items: any[];
+	setItems: (items: any[]) => void;
 };

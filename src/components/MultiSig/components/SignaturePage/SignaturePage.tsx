@@ -21,16 +21,24 @@ export const truncateAddress = (address: string) => {
 	return `${address.slice(0, 6)}....${address.slice(address.length - 6)}`;
 };
 
-const SignaturePage = ({multiSigAccount, finalizedRecipients, txMemo, handleBack, previousSignatures, setBroadcastResponse, setPreviousSignatures}: SignaturePageProps) => {
-    const { connectedWallet, accounts, chainId, rpcUrl } = useWallet();
+const SignaturePage = ({
+	multiSigAccount,
+	finalizedRecipients,
+	txMemo,
+	handleBack,
+	previousSignatures,
+	setBroadcastResponse,
+	setPreviousSignatures
+}: SignaturePageProps) => {
+	const { connectedWallet, accounts, chainId, rpcUrl } = useWallet();
 	const [isBroadcasting, setIsBroadcasting] = useState<boolean>(false);
-    const [encodedSignatureInput, setEncodedSignatureInput] = useState<string>();
+	const [encodedSignatureInput, setEncodedSignatureInput] = useState<string>();
 	const hasRequiredNumberOfSignatures = useMemo(() => {
 		if (!multiSigAccount) return false;
 		return parseInt(multiSigAccount.pubkey.value.threshold) === previousSignatures.length;
 	}, [multiSigAccount, previousSignatures]);
-    
-    const TX_FEE = calculateFee(400000, '0.1usei');
+
+	const TX_FEE = calculateFee(400000, '0.1usei');
 
 	const sendMultiSig = async () => {
 		try {
@@ -127,85 +135,87 @@ const SignaturePage = ({multiSigAccount, finalizedRecipients, txMemo, handleBack
 		setPreviousSignatures([...previousSignatures, encodedSignatureObject]);
 	};
 
-    const addSignature = () => {
-        if (encodedSignatureInput) {
-            setPreviousSignatures([...previousSignatures, encodedSignatureInput]);
-            setEncodedSignatureInput('');
-        }
-    };
+	const addSignature = () => {
+		if (encodedSignatureInput) {
+			setPreviousSignatures([...previousSignatures, encodedSignatureInput]);
+			setEncodedSignatureInput('');
+		}
+	};
 
-    const renderSignaturePage = () => {
-        return (
-            <div className={styles.card}>
-                <p className={styles.cardHeader}>Step 4: Sign TX or paste other's signatures</p>
-                <p>
-                    This multi-sig requires {multiSigAccount.pubkey.value.threshold} signatures. Please either paste the encoded signatures from other accounts if you wish to
-                    broadcast this transaction or sign the transaction yourself and send the encoded signature to whoever will be broadcasting the transaction.
-                </p>
-                <h5>
-                    {previousSignatures.length}/{multiSigAccount.pubkey.value.threshold} required signatures added
-                </h5>
-    
-                <div className={styles.signaturesList}>
-                    {previousSignatures.map((signature, index) => {
-                        const onClickCopy = () => {
-                            navigator.clipboard.writeText(signature);
-                            toast.info('Signature copied to clipboard');
-                        };
-                        const decodedSignature = JSON.parse(atob(signature));
-                        return (
-                            <div key={index} className={styles.signatureItem}>
-                                <p className={styles.cardHeader}>SIGNER {index + 1}:</p>
-                                <div className={styles.cardTip}>{decodedSignature && truncateAddress(decodedSignature.address)}</div>
-                                <button onClick={onClickCopy} className={styles.copyButton}>
-                                    <FaCopy /> copy signature
-                                </button>
-                                <HiTrash
-                                    className={styles.trash}
-                                    onClick={() => {
-                                        setPreviousSignatures(previousSignatures.filter((_, i) => i !== index));
-                                    }}
-                                />
-                            </div>
-                        );
-                    })}
-                    {!hasRequiredNumberOfSignatures && (
-                        <div className={styles.addSignature}>
-                            <p className={styles.cardHeader}>Add a signature</p>
-                            <p>Option 1: </p>
-                            <button className={styles.button} onClick={signTransactionForMultiSig}>
-                                <FaSignature /> Sign transaction
-                            </button>
-    
-                            <p>Option 2:</p>
-                            <div className={styles.row}>
-                                <input
-                                    className={styles.input}
-                                    placeholder='Paste encoded signature...'
-                                    value={encodedSignatureInput}
-                                    onChange={(e) => setEncodedSignatureInput(e.target.value)}
-                                />
-                                <button onClick={addSignature} className={styles.button}>
-                                    <FaPlus /> Add
-                                </button>
-                            </div>
-                        </div>
-                    )}
-                </div>
-                <div className={styles.backAndNextSection}>
-                    <button className={styles.button} onClick={handleBack}>Back</button>
-                    <button
-                        className={cn(styles.button, { [styles.buttonReady]: hasRequiredNumberOfSignatures })}
-                        disabled={!hasRequiredNumberOfSignatures || isBroadcasting}
-                        onClick={sendMultiSig}>
-                        {isBroadcasting ? 'broadcasting...' : 'Broadcast Transaction'}
-                    </button>
-                </div>
-            </div>
-        );
-    }
-    
-    return renderSignaturePage();
-}
+	const renderSignaturePage = () => {
+		return (
+			<div className={styles.card}>
+				<p className={styles.cardHeader}>Step 4: Sign TX or paste other's signatures</p>
+				<p>
+					This multi-sig requires {multiSigAccount.pubkey.value.threshold} signatures. Please either paste the encoded signatures from other accounts if you wish to
+					broadcast this transaction or sign the transaction yourself and send the encoded signature to whoever will be broadcasting the transaction.
+				</p>
+				<h5>
+					{previousSignatures.length}/{multiSigAccount.pubkey.value.threshold} required signatures added
+				</h5>
+
+				<div className={styles.signaturesList}>
+					{previousSignatures.map((signature, index) => {
+						const onClickCopy = () => {
+							navigator.clipboard.writeText(signature);
+							toast.info('Signature copied to clipboard');
+						};
+						const decodedSignature = JSON.parse(atob(signature));
+						return (
+							<div key={index} className={styles.signatureItem}>
+								<p className={styles.cardHeader}>SIGNER {index + 1}:</p>
+								<div className={styles.cardTip}>{decodedSignature && truncateAddress(decodedSignature.address)}</div>
+								<button onClick={onClickCopy} className={styles.copyButton}>
+									<FaCopy /> copy signature
+								</button>
+								<HiTrash
+									className={styles.trash}
+									onClick={() => {
+										setPreviousSignatures(previousSignatures.filter((_, i) => i !== index));
+									}}
+								/>
+							</div>
+						);
+					})}
+					{!hasRequiredNumberOfSignatures && (
+						<div className={styles.addSignature}>
+							<p className={styles.cardHeader}>Add a signature</p>
+							<p>Option 1: </p>
+							<button className={styles.button} onClick={signTransactionForMultiSig}>
+								<FaSignature /> Sign transaction
+							</button>
+
+							<p>Option 2:</p>
+							<div className={styles.row}>
+								<input
+									className={styles.input}
+									placeholder='Paste encoded signature...'
+									value={encodedSignatureInput}
+									onChange={(e) => setEncodedSignatureInput(e.target.value)}
+								/>
+								<button onClick={addSignature} className={styles.button}>
+									<FaPlus /> Add
+								</button>
+							</div>
+						</div>
+					)}
+				</div>
+				<div className={styles.backAndNextSection}>
+					<button className={styles.button} onClick={handleBack}>
+						Back
+					</button>
+					<button
+						className={cn(styles.button, { [styles.buttonReady]: hasRequiredNumberOfSignatures })}
+						disabled={!hasRequiredNumberOfSignatures || isBroadcasting}
+						onClick={sendMultiSig}>
+						{isBroadcasting ? 'broadcasting...' : 'Broadcast Transaction'}
+					</button>
+				</div>
+			</div>
+		);
+	};
+
+	return renderSignaturePage();
+};
 
 export default SignaturePage;

@@ -41,7 +41,6 @@ const ChainInfo = () => {
 					value={chainConfiguration}
 					placeholder='Select an option'
 				/>
-
 			</div>
 
 			<div className='labelInput'>
@@ -77,7 +76,7 @@ const ChainInfo = () => {
 					onChange={(e) => setCustomRpcUrl(e.target.value)}
 				/>
 			</div>
-			<CodeExecute text={exampleCodeText} title={'REACT CONFIGURATION EXAMPLE'}/>
+			<CodeExecute text={exampleCodeText} title={'REACT CONFIGURATION EXAMPLE'} />
 		</div>
 	);
 };

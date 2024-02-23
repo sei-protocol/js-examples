@@ -4,7 +4,7 @@ import styles from './MultiSig.module.sass';
 import { Account, calculateFee, DeliverTxResponse, makeMultisignedTxBytes, StargateClient } from '@cosmjs/stargate';
 import { RecipientAmount } from './components/RecipientsPage/types';
 import { useWallet } from '@sei-js/react';
-import 'react-modern-drawer/dist/index.css'
+import 'react-modern-drawer/dist/index.css';
 import MultiSigLookup from './components/MultiSigLookup/MultiSigLookup';
 import RecipientsPage from './components/RecipientsPage/RecipientsPage';
 import SignaturePage from './components/SignaturePage/SignaturePage';
@@ -16,7 +16,7 @@ const MultiSig = ({}: MultiSigProps) => {
 
 	const [multiSigAccount, setMultiSigAccount] = useState<Account>();
 	const [activatedMultiSig, setActivatedMultiSig] = useState<Account>();
-    const [inputtedAccounts, setInputtedAccounts] = useState<InputAccount[]>([]);
+	const [inputtedAccounts, setInputtedAccounts] = useState<InputAccount[]>([]);
 	const [multiSigThreshold, setMultiSigThreshold] = useState<number>(0);
 	const [previousSignatures, setPreviousSignatures] = useState<string[]>([]);
 
@@ -28,46 +28,49 @@ const MultiSig = ({}: MultiSigProps) => {
 
 	const renderMultiSigLookup = () => {
 		if (multiSigAccount) return null;
-		return <MultiSigLookup
-			setMultiSigAccount={setMultiSigAccount}
-			inputtedAccounts={inputtedAccounts}
-			setInputtedAccounts={setInputtedAccounts}
-			multiSigThreshold={multiSigThreshold}
-			setMultiSigThreshold={setMultiSigThreshold}></MultiSigLookup>
+		return (
+			<MultiSigLookup
+				setMultiSigAccount={setMultiSigAccount}
+				inputtedAccounts={inputtedAccounts}
+				setInputtedAccounts={setInputtedAccounts}
+				multiSigThreshold={multiSigThreshold}
+				setMultiSigThreshold={setMultiSigThreshold}></MultiSigLookup>
+		);
 	};
 
 	const renderMultisigInfoPage = () => {
 		if (!multiSigAccount || activatedMultiSig) return null;
-		return <FundAccount multiSigAccount={multiSigAccount} handleBack={() => setMultiSigAccount(null)} setActivatedMultiSig={setActivatedMultiSig}></FundAccount>
-	}
+		return <FundAccount multiSigAccount={multiSigAccount} handleBack={() => setMultiSigAccount(null)} setActivatedMultiSig={setActivatedMultiSig}></FundAccount>;
+	};
 
 	const renderRecipientsPage = () => {
 		if (!activatedMultiSig || finalizedRecipients) return null;
 
-		return (<RecipientsPage 
-			multiSigAccount={activatedMultiSig}
-			handleBack={() => setActivatedMultiSig(null)}
-			parsedRecipients={parsedRecipients}
-			txMemo={txMemo}
-			setTxMemo={setTxMemo}
-			setFinalizedRecipients={setFinalizedRecipients}
-			setParsedRecipients={setParsedRecipients}
-			></RecipientsPage>)
-	}
+		return (
+			<RecipientsPage
+				multiSigAccount={activatedMultiSig}
+				handleBack={() => setActivatedMultiSig(null)}
+				parsedRecipients={parsedRecipients}
+				txMemo={txMemo}
+				setTxMemo={setTxMemo}
+				setFinalizedRecipients={setFinalizedRecipients}
+				setParsedRecipients={setParsedRecipients}></RecipientsPage>
+		);
+	};
 
 	const renderSignatureInputs = () => {
 		if (!finalizedRecipients || !activatedMultiSig || broadcastResponse) return null;
 		return (
-		<SignaturePage
-			multiSigAccount={activatedMultiSig}
-			finalizedRecipients={finalizedRecipients}
-			txMemo={txMemo}
-			handleBack={() => setFinalizedRecipients(null)}
-			previousSignatures={previousSignatures}
-			setBroadcastResponse={setBroadcastResponse}
-			setPreviousSignatures={setPreviousSignatures}>
-		</SignaturePage>)
-	}	
+			<SignaturePage
+				multiSigAccount={activatedMultiSig}
+				finalizedRecipients={finalizedRecipients}
+				txMemo={txMemo}
+				handleBack={() => setFinalizedRecipients(null)}
+				previousSignatures={previousSignatures}
+				setBroadcastResponse={setBroadcastResponse}
+				setPreviousSignatures={setPreviousSignatures}></SignaturePage>
+		);
+	};
 
 	const renderBroadcastResponse = () => {
 		if (!broadcastResponse) return null;

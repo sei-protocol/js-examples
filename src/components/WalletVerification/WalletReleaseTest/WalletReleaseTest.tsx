@@ -23,7 +23,7 @@ const WalletReleaseTest = ({}: WalletReleaseTestProps) => {
 	const [testingAll, setTestingAll] = useState<boolean>(false);
 	const [verificationSignature, setVerificationSignature] = useState<string>();
 
-	if(!connectedWallet) return null;
+	if (!connectedWallet) return null;
 
 	const version = window?.[connectedWallet?.walletInfo?.windowKey]?.version;
 
@@ -36,7 +36,7 @@ const WalletReleaseTest = ({}: WalletReleaseTestProps) => {
 		await testGetAccounts();
 		await testSignArbitrary();
 
-		if(getOfflineSignerError || getOfflineSignerAutoError || getAccountsError || signArbitraryError){
+		if (getOfflineSignerError || getOfflineSignerAutoError || getAccountsError || signArbitraryError) {
 			setVerificationSignature(undefined);
 			setTestingAll(false);
 			return;
@@ -52,7 +52,13 @@ const WalletReleaseTest = ({}: WalletReleaseTestProps) => {
 		<div className={styles.content}>
 			<div className={styles.fullTestAction}>
 				<IoPlayCircle onClick={onClickTest} />
-				{verificationSignature ? <p className={styles.success}>Verified {connectedWallet.walletInfo.name} version {version}</p> : <p>Verify all</p>}
+				{verificationSignature ? (
+					<p className={styles.success}>
+						Verified {connectedWallet.walletInfo.name} version {version}
+					</p>
+				) : (
+					<p>Verify all</p>
+				)}
 			</div>
 			<p>{verificationSignature}</p>
 		</div>

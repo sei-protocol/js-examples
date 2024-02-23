@@ -21,7 +21,7 @@ const DexModule = () => {
 				case 'getOrders':
 					const getOrdersQuery = {
 						contractAddr: contractAddress,
-						account: accounts[0].address,
+						account: accounts[0].address
 					};
 					setResponse(await queryClient.seiprotocol.seichain.dex.getOrders(getOrdersQuery));
 					return;
@@ -46,7 +46,7 @@ const DexModule = () => {
 					return;
 			}
 		} catch (e: any) {
-			setResponse({ error: e.message })
+			setResponse({ error: e.message });
 		}
 	}, [queryClient, queryType]);
 
@@ -54,33 +54,33 @@ const DexModule = () => {
 		queryContract().then();
 	}, [queryClient, contractAddress, queryType]);
 
-	return <div className='card'>
-		<h3 className='sectionHeader'>Dex module</h3>
-		<div className='cardContent'>
-			<div className='labelInput'>
-				<p className='label'>contract address:</p>
-				<input
-					autoFocus={true}
-					placeholder='enter a dex contract address...'
-					className='input'
-					value={contractAddress}
-					onChange={(e) => setContractAddress(e.target.value)}
+	return (
+		<div className='card'>
+			<h3 className='sectionHeader'>Dex module</h3>
+			<div className='cardContent'>
+				<div className='labelInput'>
+					<p className='label'>contract address:</p>
+					<input
+						autoFocus={true}
+						placeholder='enter a dex contract address...'
+						className='input'
+						value={contractAddress}
+						onChange={(e) => setContractAddress(e.target.value)}
+					/>
+				</div>
+				<Dropdown
+					className='dropdown'
+					options={['getHistoricalPrices', 'getOrders', 'getMarketSummary']}
+					onChange={(dropdown) => setQueryType(dropdown.value as any)}
+					value={queryType}
+					placeholder='Select a query'
 				/>
-			</div>
-			<Dropdown
-				className='dropdown'
-				options={['getHistoricalPrices', 'getOrders', 'getMarketSummary']}
-				onChange={(dropdown) => setQueryType(dropdown.value as any)}
-				value={queryType}
-				placeholder='Select a query'
-			/>
-			<div className='marketSummary'>
-				<div className='marketSummary--item'>
-					{response && <ReactJson theme="monokai" src={response} />}
+				<div className='marketSummary'>
+					<div className='marketSummary--item'>{response && <ReactJson theme='monokai' src={response} />}</div>
 				</div>
 			</div>
 		</div>
-	</div>;
+	);
 };
 
 export default DexModule;

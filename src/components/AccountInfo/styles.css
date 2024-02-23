@@ -1,137 +1,137 @@
 .walletConnection {
-	padding: 24px;
-	width: fit-content;
+    padding: 24px;
+    width: fit-content;
 }
 
 .addressWrapper {
-	flex-direction: row;
-	align-items: center;
-	margin-bottom: 24px;
+    flex-direction: row;
+    align-items: center;
+    margin-bottom: 24px;
 }
 
 .accountAddress {
-	font-weight: 600;
-	background-color: var(--white-48);
-	color: var(--background-color);
-	width: fit-content;
-	padding: 6px 12px;
-	height: 32px;
-	font-size: 13pt;
-	border-radius: 24px;
-	flex: unset;
-	white-space: nowrap;
-	overflow: hidden;
-	text-overflow: ellipsis;
+    font-weight: 600;
+    background-color: var(--white-48);
+    color: var(--background-color);
+    width: fit-content;
+    padding: 6px 12px;
+    height: 32px;
+    font-size: 13pt;
+    border-radius: 24px;
+    flex: unset;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .copy {
-	width: 32px;
-	height: 32px;
-	padding: 6px;
-	margin-left: 12px;
-	border: var(--white-80) solid 2px;
-	border-radius: 24px;
-	cursor: pointer;
-	transition: 250ms all ease-in-out;
+    width: 32px;
+    height: 32px;
+    padding: 6px;
+    margin-left: 12px;
+    border: var(--white-80) solid 2px;
+    border-radius: 24px;
+    cursor: pointer;
+    transition: 250ms all ease-in-out;
 }
 
 .copy:hover {
-	opacity: 0.6;
+    opacity: 0.6;
 }
 
 .tokens {
-	flex-direction: column;
-	width: 100%;
-	border-radius: 1rem;
-	overflow: hidden;
-	background-color: var(--background-color);
-	border: var(--white-48) solid 1px;
+    flex-direction: column;
+    width: 100%;
+    border-radius: 1rem;
+    overflow: hidden;
+    background-color: var(--background-color);
+    border: var(--white-48) solid 1px;
 }
 
 .tokenRow {
-	flex-direction: row;
-	justify-content: space-between;
-	align-items: center;
-	background-color: var(--white-6);
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    background-color: var(--white-6);
 }
 
 .tokenDenom {
-	flex: 1;
-	color: white;
-	padding: 12px;
-	word-break: break-word;
+    flex: 1;
+    color: white;
+    padding: 12px;
+    word-break: break-word;
 }
 
 .tokenAmount {
-	flex: 0;
-	width: 132px;
-	min-width: 132px;
-	color: white;
-	padding: 12px;
-	word-break: break-word;
+    flex: 0;
+    width: 132px;
+    min-width: 132px;
+    color: white;
+    padding: 12px;
+    word-break: break-word;
 }
 
 .icon {
-	width: 40px;
-	height: 40px;
-	padding: 6px;
-	color: white;
-	cursor: pointer;
-	transition: 250ms all ease-in-out;
+    width: 40px;
+    height: 40px;
+    padding: 6px;
+    color: white;
+    cursor: pointer;
+    transition: 250ms all ease-in-out;
 }
 
 .icon:hover {
-	opacity: 0.5;
+    opacity: 0.5;
 }
 
 .modal {
-	position: absolute;
-	top: 0;
-	left: 0;
-	right: 0;
-	bottom: 0;
-	background-color: var(--white-48);
-	justify-content: center;
-	align-items: center;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--white-48);
+    justify-content: center;
+    align-items: center;
 }
 
 .modalCard {
-	background-color: var(--background-color);
-	padding: 24px;
-	border-radius: 12px;
-	width: 600px;
-	max-width: 100%;
+    background-color: var(--background-color);
+    padding: 24px;
+    border-radius: 12px;
+    width: 600px;
+    max-width: 100%;
 }
 
 
 .sendButton {
-	margin-top: 24px;
-	text-align: center;
-	color: var(--background-color);
-	background-color: white;
-	border-radius: 6px;
-	padding: 12px;
-	font-size: 13pt;
-	font-weight: 600;
-	cursor: pointer;
+    margin-top: 24px;
+    text-align: center;
+    color: var(--background-color);
+    background-color: white;
+    border-radius: 6px;
+    padding: 12px;
+    font-size: 13pt;
+    font-weight: 600;
+    cursor: pointer;
 }
 
 .sendButton:hover {
-	opacity: 0.8;
+    opacity: 0.8;
 }
 
 .sendButton-disabled {
-	cursor: not-allowed;
-	user-select: none;
-	opacity: 0.3;
+    cursor: not-allowed;
+    user-select: none;
+    opacity: 0.3;
 }
 
 .sendButton:hover {
-	opacity: 0.3;
+    opacity: 0.3;
 }
 
 @media (max-width: 480px) {
-	.accountAddress {
-		flex: 1;
-	}
+    .accountAddress {
+        flex: 1;
+    }
 }

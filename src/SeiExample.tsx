@@ -6,16 +6,7 @@ import { selectedChainConfigSelector } from './recoil';
 import './common.css';
 import styles from './SeiExample.module.sass';
 import WalletVerification from './components/WalletVerification/WalletVerification';
-import {
-	ACCOUNT_ROUTE,
-	APP_ROUTES,
-	AppRoute,
-	CHAIN_INFO_ROUTE,
-	DEX_MODULE_ROUTE,
-	MULTI_SIG_ROUTE,
-	WALLET_VERIFICATION_ROUTE,
-	WASM_MODULE_ROUTE
-} from './config';
+import { ACCOUNT_ROUTE, APP_ROUTES, AppRoute, CHAIN_INFO_ROUTE, DEX_MODULE_ROUTE, MULTI_SIG_ROUTE, WALLET_VERIFICATION_ROUTE, WASM_MODULE_ROUTE } from './config';
 import cn from 'classnames';
 import { SeiWalletProvider, WalletConnectButton } from '@sei-js/react';
 
@@ -27,42 +18,40 @@ const SeiExample = () => {
 	const renderItem = (link: AppRoute) => {
 		const isSelectedItem = link === selectedPage;
 		return (
-			<p className={cn(styles.sidebarItem, { [styles.sidebarItemSelected] : isSelectedItem })} onClick={() => setSelectedPage(link)}>{link.title}</p>
-		)
-	}
+			<p className={cn(styles.sidebarItem, { [styles.sidebarItemSelected]: isSelectedItem })} onClick={() => setSelectedPage(link)}>
+				{link.title}
+			</p>
+		);
+	};
 
 	const renderRoute = () => {
-		switch(selectedPage) {
+		switch (selectedPage) {
 			case CHAIN_INFO_ROUTE:
-				return <ChainInfo />
+				return <ChainInfo />;
 			case WALLET_VERIFICATION_ROUTE:
-				return <WalletVerification />
+				return <WalletVerification />;
 			case ACCOUNT_ROUTE:
-				return <AccountInfo />
+				return <AccountInfo />;
 			case WASM_MODULE_ROUTE:
-				return <WasmModule />
+				return <WasmModule />;
 			case DEX_MODULE_ROUTE:
-				return <DexModule />
+				return <DexModule />;
 			case MULTI_SIG_ROUTE:
-				return <MultiSig />
+				return <MultiSig />;
 		}
-	}
+	};
 
 	return (
-		<SeiWalletProvider chainConfiguration={selectedChainConfigUrls} wallets={['compass', 'fin', 'keplr', 'leap' ] }>
+		<SeiWalletProvider chainConfiguration={selectedChainConfigUrls} wallets={['compass', 'fin', 'keplr', 'leap']}>
 			<div className='app'>
 				<div className='appHeader'>
-					<div className={styles.headerItem}/>
+					<div className={styles.headerItem} />
 					<h2>@sei-js playground</h2>
 					<WalletConnectButton buttonClassName='walletButton' />
 				</div>
 				<div className={styles.content}>
-					<div className={styles.sidebar}>
-						{APP_ROUTES.map(renderItem)}
-					</div>
-					<div className={styles.appContent}>
-						{renderRoute()}
-					</div>
+					<div className={styles.sidebar}>{APP_ROUTES.map(renderItem)}</div>
+					<div className={styles.appContent}>{renderRoute()}</div>
 				</div>
 				<SendTokens />
 			</div>

@@ -27,18 +27,19 @@ const AccountInfo = () => {
 				return balances as BalanceResponseType[];
 			}
 			return [];
-
 		};
 
-		setIsFetchingBalances(true)
-		fetchBalances().then((balances) => {
-			setIsFetchingBalances(false)
-			setWalletBalances(balances)
-		}).catch((e) => {
-			console.error('Error fetching balances', e.message);
-			toast.error('Error fetching balances');
-			return [];
-		});
+		setIsFetchingBalances(true);
+		fetchBalances()
+			.then((balances) => {
+				setIsFetchingBalances(false);
+				setWalletBalances(balances);
+			})
+			.catch((e) => {
+				console.error('Error fetching balances', e.message);
+				toast.error('Error fetching balances');
+				return [];
+			});
 	}, [queryClient, firstAccount]);
 
 	const renderBalances = () => {
@@ -46,7 +47,7 @@ const AccountInfo = () => {
 			return <p>Wallet not connected</p>;
 		}
 
-		if(isFetchingBalances) {
+		if (isFetchingBalances) {
 			return null;
 		}
 
@@ -70,7 +71,6 @@ const AccountInfo = () => {
 	};
 
 	const renderContent = () => {
-
 		return (
 			<div className='tokens'>
 				<div className='tokenRow'>
@@ -83,13 +83,10 @@ const AccountInfo = () => {
 		);
 	};
 
-
 	return (
 		<div className='card'>
 			<h3 className='sectionHeader'>Account</h3>
-			<div className='cardContent'>
-				{renderContent()}
-			</div>
+			<div className='cardContent'>{renderContent()}</div>
 		</div>
 	);
 };

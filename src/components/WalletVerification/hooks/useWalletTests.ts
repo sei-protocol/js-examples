@@ -22,7 +22,7 @@ export const useWalletTests = () => {
 	const [getOfflineSignerAutoError, setGetOfflineSignerAutoError] = useState<string | undefined>();
 
 	useEffect(() => {
-		if(!connectedWallet) {
+		if (!connectedWallet) {
 			setSignArbitraryResponse(undefined);
 			setSignArbitraryError(undefined);
 			setGetOfflineSignerResponse(undefined);
@@ -35,7 +35,6 @@ export const useWalletTests = () => {
 	}, [connectedWallet]);
 
 	const testGetAccounts = async () => {
-
 		try {
 			setGetAccountsResponse(undefined);
 			setGetAccountsError(undefined);
@@ -90,5 +89,18 @@ export const useWalletTests = () => {
 		}
 	};
 
-	return { signArbitraryResponse, signArbitraryError, getOfflineSignerResponse, getOfflineSignerError, getAccountsResponse, getAccountsError, getOfflineSignerAutoResponse, getOfflineSignerAutoError, testGetOfflineSigner, testGetAccounts, testSignArbitrary, testGetOfflineSignerAuto };
-}
+	return {
+		signArbitraryResponse,
+		signArbitraryError,
+		getOfflineSignerResponse,
+		getOfflineSignerError,
+		getAccountsResponse,
+		getAccountsError,
+		getOfflineSignerAutoResponse,
+		getOfflineSignerAutoError,
+		testGetOfflineSigner,
+		testGetAccounts,
+		testSignArbitrary,
+		testGetOfflineSignerAuto
+	};
+};

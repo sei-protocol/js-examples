@@ -1,1 +1,1 @@
-export * from './useWalletTests'
+export * from './useWalletTests';
