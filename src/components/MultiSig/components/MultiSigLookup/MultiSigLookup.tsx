@@ -1,110 +1,76 @@
 import React, { useState } from 'react';
-import { MultiSigLookupProps } from './types';
-import styles from '../../MultiSig.module.sass';
-import multiSigLookupStyles from './MultiiSigLookup.module.sass';
-import { StargateClient } from '@cosmjs/stargate';
+import { toast } from 'react-toastify';
+import { Account, StargateClient } from '@cosmjs/stargate';
 import { isValidSeiAddress } from '@sei-js/core';
 import { HiLightBulb } from '@react-icons/all-files/hi/HiLightBulb';
 import { useWallet } from '@sei-js/react';
-import { isMultisigThresholdPubkey, MultisigThresholdPubkey, pubkeyToAddress, createMultisigThresholdPubkey, Secp256k1Pubkey } from '@cosmjs/amino';
-import { toast } from 'react-toastify';
+import { createMultisigThresholdPubkey, isMultisigThresholdPubkey, pubkeyToAddress, Secp256k1Pubkey } from '@cosmjs/amino';
+
 import TableWithDelete from '../Utils/TableWithDelete';
+import { InputType, LookupType } from './config';
+import { MultiSigLookupProps } from './types';
+import styles from '../../MultiSig.module.sass';
+import multiSigLookupStyles from './MultiiSigLookup.module.sass';
+import { useRecoilState } from 'recoil';
+import {
+	multiSigAccountAddressAtom,
+	multiSigAccountAtom,
+	multiSigInputTypeAtom,
+	multiSigLookupTypeAtom,
+	multiSigManualAccountsAtom,
+	multiSigThresholdAtom
+} from '../../../../recoil';
 
-const MultiSigLookup = ({ setMultiSigAccount, inputtedAccounts, setInputtedAccounts, multiSigThreshold, setMultiSigThreshold }: MultiSigLookupProps) => {
+const MultiSigLookup = ({}: MultiSigLookupProps) => {
+	const [multiSigAccountAddress, setMultiSigAccountAddress] = useRecoilState(multiSigAccountAddressAtom);
+	const [multiSigAccount, setMultiSigAccount] = useRecoilState(multiSigAccountAtom);
+	const [multiSigThreshold, setMultiSigThreshold] = useRecoilState(multiSigThresholdAtom);
+	const [multiSigManualAccounts, setMultiSigManualAccounts] = useRecoilState(multiSigManualAccountsAtom);
+	const [lookupType, setLookupType] = useRecoilState(multiSigLookupTypeAtom);
+	const [inputType, setInputType] = useRecoilState(multiSigInputTypeAtom);
+
 	const [isQueryingMultiSigAccount, setIsQueryingMultiSigAccount] = useState<boolean>(false);
-	const [multiSigAccountAddress, setMultiSigAccountAddress] = useState<string>('');
 	const [newMultiSigAccountInput, setNewMultiSigAccountInput] = useState<string>('');
-	const [inputError, setInputError] = useState<string>('');
 
-	enum LookupType {
-		Select,
-		Lookup,
-		Create
-	}
-
-	const [lookupType, setLookupType] = useState<LookupType>(LookupType.Select);
-
-	// The state that determines whether the user is inputting pubkey.
-	enum InputType {
-		Address,
-		Pubkey
-	}
-
-	const [inputType, setInputType] = useState<InputType>(InputType.Address);
-	const { connectedWallet, accounts, chainId, rpcUrl } = useWallet();
+	const { chainId, rpcUrl } = useWallet();
 
 	const queryMultiSigAccount = async () => {
-		// TODO TEST CODE MUST REMOVE
-		// const account2 = {
-		//     address: "sei196wjm5sdzgfulgt6aut6fp7jw20dgmall7wr5z",
-		//     pubkey: {
-		//         type: "tendermint/PubKeyMultisigThreshold",
-		//         value: {
-		//             threshold: "1",
-		//             pubkeys: [
-		//                 {
-		//                     type: "tendermint/PubKeySecp256k1",
-		//                     value: "A8xQ4g6lU37NFfRp3P81BTzeUH78ta1c9KBtkdoyuvm/"
-		//                 },
-		//                 {
-		//                     type: "tendermint/PubKeySecp256k1",
-		//                     value: "A8xQ4g6lU37NFfRp3P81BTzeUH78ta1c9KBtkdoyuvm/"
-		//                 }
-		//             ]
-		//         }
-		//     },
-		//     accountNumber: 1,
-		//     sequence: 1
-		// }
-		// setMultiSigAccount(account2)
-		// return;
 		if (isQueryingMultiSigAccount) return;
+
 		setIsQueryingMultiSigAccount(true);
+
 		const broadcaster = await StargateClient.connect(rpcUrl);
 		const account = await broadcaster.getAccount(multiSigAccountAddress);
-		if (!account) {
-			toast.info(`The account address you entered does not exists on chain ${chainId}.`);
-			setIsQueryingMultiSigAccount(false);
-			return;
-		}
-
-		const multiSigPubkey = account.pubkey as unknown as MultisigThresholdPubkey;
-
-		if (!multiSigPubkey) {
+		if (!account || !account.pubkey || !isMultisigThresholdPubkey(account.pubkey)) {
 			toast.info(
-				'The account address you entered is not a multi-sig account that exists on chain. You must execute a TX from this multi-sig using the CLI before using this UI.' +
-					'\nAlternatively, you can recreate the multisig account using this UI by inputting the signer addresses or pubkeys.'
+				`The account address you entered is not a multi-sig account that exists on ${chainId}. Please create a new multi-sig account by entering all the account addresses and threshold for the new multi-sig.`
 			);
 			setIsQueryingMultiSigAccount(false);
+			setLookupType(LookupType.Create);
 			return;
 		}
 
-		if (!isMultisigThresholdPubkey(multiSigPubkey)) {
-			toast.info('The account address you entered is not a multi-sig account that exists on chain.');
-			setIsQueryingMultiSigAccount(false);
-			return;
-		}
 		setMultiSigAccount(account);
 		setIsQueryingMultiSigAccount(false);
 	};
 
 	const createMultiSigAccount = async () => {
-		const pubkeys = inputtedAccounts.map((inputtedAccount) => {
+		const pubKeys = multiSigManualAccounts.map((manualAccount) => {
 			return {
 				type: 'tendermint/PubKeySecp256k1',
-				value: inputtedAccount.pubkey
+				value: manualAccount.pubkey as unknown as string
 			};
 		});
-		const multisigPubkey = createMultisigThresholdPubkey(pubkeys, multiSigThreshold);
+		const multisigPubkey = createMultisigThresholdPubkey(pubKeys, multiSigThreshold);
 		const multisigAddress = pubkeyToAddress(multisigPubkey, 'sei');
 		const account = {
 			address: multisigAddress,
 			pubkey: multisigPubkey,
-			// Account number must be overridden by making querying account on Node once activated.
-			accountNumber: 1,
+			// Account number must be overridden by making querying account on Node once funded.
+			accountNumber: -1,
 			sequence: 0
 		};
-		console.log(account);
+
 		setMultiSigAccount(account);
 	};
 
@@ -134,6 +100,151 @@ const MultiSigLookup = ({ setMultiSigAccount, inputtedAccounts, setInputtedAccou
 		);
 	};
 
+	const renderMultiSigCreate = () => {
+		const getPubkeyFromNode = async (address: string) => {
+			const client = await StargateClient.connect(rpcUrl);
+
+			try {
+				const accountOnChain = await client.getAccount(address);
+
+				if (!accountOnChain || !accountOnChain.pubkey) {
+					toast.error('Account has no pubkey on chain, this address will need to send a transaction to appear on chain.');
+					return;
+				}
+
+				return accountOnChain.pubkey.value;
+			} catch (e) {
+				toast.error('Failed to get account.' + e.toString());
+				return;
+			}
+		};
+
+		const handleChangeInput = () => {
+			if (inputType == InputType.Address) {
+				setInputType(InputType.Pubkey);
+			} else {
+				setInputType(InputType.Address);
+			}
+			setNewMultiSigAccountInput('');
+		};
+
+		const getInputPlaceholder = () => {
+			if (inputType == InputType.Address) {
+				return 'Add wallet address of signer';
+			} else {
+				return 'Add Public Key (Secp256k1) of signer';
+			}
+		};
+
+		const getInputTypeChangeButtonText = () => {
+			if (inputType == InputType.Address) {
+				return 'Advanced: Use PubKey instead of address.';
+			} else {
+				return 'Basic: Use Address instead of PubKey';
+			}
+		};
+
+		const handleAddAccount = async () => {
+			// Input is address type
+			let newAccount = { address: '', pubkey: '' };
+			if (inputType == InputType.Address) {
+				const pubKey = await getPubkeyFromNode(newMultiSigAccountInput);
+				if (!pubKey) {
+					return;
+				}
+				newAccount = { address: newMultiSigAccountInput, pubkey: pubKey };
+			} else {
+				newAccount.pubkey = newMultiSigAccountInput;
+				const pubKey: Secp256k1Pubkey = {
+					value: newMultiSigAccountInput,
+					type: 'tendermint/PubKeySecp256k1'
+				};
+				newAccount.address = pubkeyToAddress(pubKey, 'sei');
+			}
+			setMultiSigManualAccounts([...multiSigManualAccounts, newAccount as unknown as Account]);
+
+			setNewMultiSigAccountInput('');
+		};
+
+		const handleMultiSigAccountInput = (newInput: string) => {
+			setNewMultiSigAccountInput(newInput);
+			if (inputType == InputType.Address) {
+				if (!isValidSeiAddress(newInput)) {
+					toast.error('Please input a valid Sei address');
+				}
+			}
+			if (inputType == InputType.Pubkey) {
+				if (newInput.length != 44) {
+					toast.error('Please input a valid Secp256k1 pubkey');
+				}
+			}
+		};
+
+		const renderThresholdSection = () => {
+			if (multiSigManualAccounts.length < 2) {
+				return (
+					<div className={styles.card}>
+						<p>At least 2 accounts are required to create a multi-sig account</p>
+					</div>
+				);
+			}
+
+			return (
+				<div className={styles.card}>
+					<p>Signatures required to send a transaction</p>
+					<div className={multiSigLookupStyles.thresholdModule}>
+						<input
+							type='number'
+							className={multiSigLookupStyles.thresholdInput}
+							max={multiSigManualAccounts.length}
+							value={multiSigThreshold}
+							onChange={(e) => setMultiSigThreshold(e.target.valueAsNumber || undefined)}
+						/>
+						<p className={multiSigLookupStyles.thresholdText}>of</p>
+						<p className={multiSigLookupStyles.thresholdInput}>{multiSigManualAccounts.length}</p>
+					</div>
+					<p>
+						This means that each transaction this multisig makes will only require {multiSigThreshold || ''} of the {multiSigManualAccounts.length} members to sign
+						it for it to be accepted by the validators.
+					</p>
+				</div>
+			);
+		};
+
+		return (
+			<div className={styles.card}>
+				<p className={styles.cardHeader}>Step 1: Create multi-sig account</p>
+				<div className={styles.card}>
+					<p className={multiSigLookupStyles.cardHeader}>Add new signer account</p>
+					<div className={styles.inputWithError}>
+						<input
+							placeholder={getInputPlaceholder()}
+							className={styles.input}
+							value={newMultiSigAccountInput}
+							onChange={(e) => handleMultiSigAccountInput(e.target.value)}
+						/>
+						<button className={styles.button} onClick={handleAddAccount}>
+							Add Account
+						</button>
+						<p className='cursor-pointer hover:underline' onClick={handleChangeInput}>
+							{getInputTypeChangeButtonText()}
+						</p>
+					</div>
+				</div>
+				<TableWithDelete items={multiSigManualAccounts} setItems={setMultiSigManualAccounts} />
+				{renderThresholdSection()}
+				<div className={styles.backAndNextSection}>
+					<button className={styles.button} onClick={() => setLookupType(LookupType.Select)}>
+						Back
+					</button>
+					<button className={styles.button} disabled={multiSigManualAccounts.length < 2 || multiSigThreshold < 1} onClick={createMultiSigAccount}>
+						Next
+					</button>
+				</div>
+			</div>
+		);
+	};
+
 	const renderMultiSigSelectAccountComponent = () => {
 		return (
 			<div className={styles.card}>
@@ -152,170 +263,15 @@ const MultiSigLookup = ({ setMultiSigAccount, inputtedAccounts, setInputtedAccou
 		);
 	};
 
-	const renderMultiSigCreate = () => {
-		const getPubkeyFromNode = async (address: string) => {
-			const client = await StargateClient.connect(rpcUrl);
-			let accountOnChain;
-			try {
-				accountOnChain = await client.getAccount(address);
-			} catch (e) {
-				setInputError('Failed to get account.' + e.toString());
-				return;
-			}
-
-			console.log(accountOnChain);
-			if (!accountOnChain || !accountOnChain.pubkey) {
-				setInputError('Account has no pubkey on chain, this address will need to send a transaction to appear on chain.');
-				return;
-			}
-			return accountOnChain.pubkey.value;
-		};
-
-		const handleChangeInput = () => {
-			if (inputType == InputType.Address) {
-				setInputType(InputType.Pubkey);
-			} else {
-				setInputType(InputType.Address);
-			}
-			setNewMultiSigAccountInput('');
-			setInputError('');
-		};
-
-		const getInputPlaceholder = () => {
-			if (inputType == InputType.Address) {
-				return 'Add wallet address of signer';
-			} else {
-				return 'Add Public Key (Secp256k1) of signer';
-			}
-		};
-
-		const getInputTypeChangeButtonText = () => {
-			if (inputType == InputType.Address) {
-				return 'Use Public Key';
-			} else {
-				return 'Use Address';
-			}
-		};
-
-		const handleAddAccount = async () => {
-			// Input is address type
-			let pubKey = '';
-			let newAccount = { address: '', pubkey: '' };
-			if (inputType == InputType.Address) {
-				const pubKey = await getPubkeyFromNode(newMultiSigAccountInput);
-				if (!pubKey) {
-					return;
-				}
-				newAccount = { address: newMultiSigAccountInput, pubkey: pubKey };
-			} else {
-				newAccount.pubkey = newMultiSigAccountInput;
-				const pubKey: Secp256k1Pubkey = {
-					value: newMultiSigAccountInput,
-					type: 'tendermint/PubKeySecp256k1'
-				};
-				newAccount.address = pubkeyToAddress(pubKey, 'sei');
-			}
-			setInputtedAccounts([...inputtedAccounts, newAccount]);
-
-			setNewMultiSigAccountInput('');
-		};
-
-		const handleMultiSigAccountInput = (newInput: string) => {
-			setNewMultiSigAccountInput(newInput);
-			if (inputType == InputType.Address) {
-				if (!isValidSeiAddress(newInput)) {
-					setInputError('Please input a valid Sei address');
-				} else {
-					setInputError('');
-				}
-			}
-			if (inputType == InputType.Pubkey) {
-				if (newInput.length != 44) {
-					setInputError('Please input a valid Secp256k1 pubkey');
-				} else {
-					setInputError('');
-				}
-			}
-		};
-
-		const handleMultiSigThresholdInput = (value: number) => {
-			if (!value || (value <= inputtedAccounts.length && value >= 0)) {
-				setMultiSigThreshold(value);
-			}
-		};
-
-		return (
-			<div className={styles.card}>
-				<p className={styles.cardHeader}>Step 1: Create multi-sig account</p>
-				<div className={styles.cardTip}>
-					<HiLightBulb className={styles.tipBulb} />
-					<div>
-						<p>Wallet must have signed and broadcast at least one transaction before it can be used.</p>
-						<p>Otherwise, input public key of account.</p>
-					</div>
-				</div>
-				<TableWithDelete items={inputtedAccounts} setItems={setInputtedAccounts} />
-				<div className={styles.card}>
-					<p className={multiSigLookupStyles.cardHeader}>Add new signer account</p>
-					<div className={styles.inputWithError}>
-						<input
-							placeholder={getInputPlaceholder()}
-							className={styles.input}
-							value={newMultiSigAccountInput}
-							onChange={(e) => handleMultiSigAccountInput(e.target.value)}
-						/>
-						<button className={multiSigLookupStyles.changeButton} onClick={handleChangeInput}>
-							{getInputTypeChangeButtonText()}
-						</button>
-						<div className={styles.inputErrorText}>{inputError}</div>
-					</div>
-					<button className={styles.button} disabled={inputError != ''} onClick={handleAddAccount}>
-						Add Account
-					</button>
-				</div>
-				<div className={styles.card}>
-					<p>Signatures required to send a transaction</p>
-					<div className={multiSigLookupStyles.thresholdModule}>
-						<input
-							type='number'
-							className={multiSigLookupStyles.thresholdInput}
-							max={inputtedAccounts.length}
-							value={multiSigThreshold}
-							onChange={(e) => handleMultiSigThresholdInput(e.target.valueAsNumber)}
-						/>
-						<p className={multiSigLookupStyles.thresholdText}>of</p>
-						<p className={multiSigLookupStyles.thresholdInput}>{inputtedAccounts.length}</p>
-					</div>
-					<p>
-						This means that each transaction this multisig makes will only require {multiSigThreshold} of the {inputtedAccounts.length} members to sign it for it to
-						be accepted by the validators.
-					</p>
-				</div>
-				<div className={styles.backAndNextSection}>
-					<button className={styles.button} onClick={() => setLookupType(LookupType.Select)}>
-						Back
-					</button>
-					<button className={styles.button} disabled={inputtedAccounts.length < 2 || multiSigThreshold < 1} onClick={createMultiSigAccount}>
-						Create
-					</button>
-				</div>
-			</div>
-		);
-	};
-
-	const renderMultiSigAccountComponent = () => {
-		switch (lookupType) {
-			case LookupType.Lookup:
-				return renderMultiSigLookup();
-			case LookupType.Create:
-				return renderMultiSigCreate();
-			case LookupType.Select:
-			default:
-				return renderMultiSigSelectAccountComponent();
-		}
-	};
-
-	return renderMultiSigAccountComponent();
+	switch (lookupType) {
+		case LookupType.Lookup:
+			return renderMultiSigLookup();
+		case LookupType.Create:
+			return renderMultiSigCreate();
+		case LookupType.Select:
+		default:
+			return renderMultiSigSelectAccountComponent();
+	}
 };
 
 export default MultiSigLookup;

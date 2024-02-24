@@ -9,6 +9,7 @@ import WalletVerification from './components/WalletVerification/WalletVerificati
 import { ACCOUNT_ROUTE, APP_ROUTES, AppRoute, CHAIN_INFO_ROUTE, DEX_MODULE_ROUTE, MULTI_SIG_ROUTE, WALLET_VERIFICATION_ROUTE, WASM_MODULE_ROUTE } from './config';
 import cn from 'classnames';
 import { SeiWalletProvider, WalletConnectButton } from '@sei-js/react';
+import { Link, Route, Routes } from 'react-router-dom';
 
 const SeiExample = () => {
 	const selectedChainConfigUrls = useRecoilValue(selectedChainConfigSelector);
@@ -18,27 +19,23 @@ const SeiExample = () => {
 	const renderItem = (link: AppRoute) => {
 		const isSelectedItem = link === selectedPage;
 		return (
-			<p className={cn(styles.sidebarItem, { [styles.sidebarItemSelected]: isSelectedItem })} onClick={() => setSelectedPage(link)}>
+			<Link key={link.route} className={cn(styles.sidebarItem, { [styles.sidebarItemSelected]: isSelectedItem })} to={link.route}>
 				{link.title}
-			</p>
+			</Link>
 		);
 	};
 
 	const renderRoute = () => {
-		switch (selectedPage) {
-			case CHAIN_INFO_ROUTE:
-				return <ChainInfo />;
-			case WALLET_VERIFICATION_ROUTE:
-				return <WalletVerification />;
-			case ACCOUNT_ROUTE:
-				return <AccountInfo />;
-			case WASM_MODULE_ROUTE:
-				return <WasmModule />;
-			case DEX_MODULE_ROUTE:
-				return <DexModule />;
-			case MULTI_SIG_ROUTE:
-				return <MultiSig />;
-		}
+		return (
+			<Routes>
+				<Route path={CHAIN_INFO_ROUTE.route} element={<ChainInfo />} />
+				<Route path={MULTI_SIG_ROUTE.route} element={<MultiSig />} />
+				<Route path={WALLET_VERIFICATION_ROUTE.route} element={<WalletVerification />} />
+				<Route path={DEX_MODULE_ROUTE.route} element={<DexModule />} />
+				<Route path={WASM_MODULE_ROUTE.route} element={<WasmModule />} />
+				<Route path={ACCOUNT_ROUTE.route} element={<AccountInfo />} />
+			</Routes>
+		);
 	};
 
 	return (

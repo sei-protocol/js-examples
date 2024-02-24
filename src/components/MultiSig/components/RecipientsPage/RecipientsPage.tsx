@@ -2,36 +2,34 @@ import React, { useState } from 'react';
 import { AddRecipientPageProps, RecipientAmount } from './types';
 import styles from '../../MultiSig.module.sass';
 import { isValidSeiAddress } from '@sei-js/core';
-import { toast } from 'react-toastify';
 import TableWithDelete from '../Utils/TableWithDelete';
 import { BiSpreadsheet } from '@react-icons/all-files/bi/BiSpreadsheet';
 import CSVUpload from './CSVUpload';
 import Drawer from 'react-modern-drawer';
 import cn from 'classnames';
+import { useRecoilState } from 'recoil';
+import { multiSigAccountAtom, multiSigRecipientsAtom, multiSigTxMemoAtom } from '../../../../recoil';
 
-const RecipientsPage = ({
-	multiSigAccount,
-	handleBack,
-	setFinalizedRecipients,
-	setParsedRecipients,
-	parsedRecipients,
-	setTxMemo,
-	txMemo
-}: AddRecipientPageProps) => {
+const RecipientsPage = ({}: AddRecipientPageProps) => {
+	const [multiSendRecipients, setMultiSendRecipients] = useRecoilState(multiSigRecipientsAtom);
+	const [txMemo, setTxMemo] = useRecoilState(multiSigTxMemoAtom);
+	const [multiSigAccount, setMultiSigAccount] = useRecoilState(multiSigAccountAtom);
+
 	const [isPaneOpen, setIsPaneOpen] = useState<boolean>(false);
 	const [recipientAddress, setRecipientAddress] = useState<string>('');
 	const [recipientAmount, setRecipientAmount] = useState<number>(0);
 	const [recipientDenom, setRecipientDenom] = useState<string>('usei');
+	const [tempRecipients, setTempRecipients] = useState<RecipientAmount[]>([]);
 
 	const renderRecipientsPage = () => {
 		const renderRecipientList = () => {
-			if (parsedRecipients.length === 0) return null;
+			if (!tempRecipients || tempRecipients.length === 0) return null;
 
-			return <TableWithDelete items={parsedRecipients} setItems={setParsedRecipients}></TableWithDelete>;
+			return <TableWithDelete items={tempRecipients} setItems={setTempRecipients}></TableWithDelete>;
 		};
 
 		const renderRecipientContent = () => {
-			if (parsedRecipients.length !== 0) return null;
+			if (tempRecipients.length !== 0) return null;
 
 			return (
 				<>
@@ -43,12 +41,12 @@ const RecipientsPage = ({
 							<p>Use the 'Add recipient' button below to add recipients manually.</p>
 						</div>
 					</div>
-					<CSVUpload onParseData={setParsedRecipients} />
+					<CSVUpload onParseData={(csvRecipientAmounts) => setTempRecipients(csvRecipientAmounts)} />
 				</>
 			);
 		};
 
-		const renderAddReceipientForm = () => {
+		const renderAddRecipientForm = () => {
 			const handleSubmitRecipient = () => {
 				let finalAmount = recipientAmount;
 				let finalDenom = recipientDenom;
@@ -56,7 +54,7 @@ const RecipientsPage = ({
 					finalDenom = 'usei';
 					finalAmount = recipientAmount * 1000000;
 				}
-				setParsedRecipients([...parsedRecipients, { recipient: recipientAddress, amount: finalAmount, denom: finalDenom }]);
+				setTempRecipients([...tempRecipients, { recipient: recipientAddress, amount: finalAmount, denom: finalDenom }]);
 				setIsPaneOpen(false);
 				setRecipientAddress('');
 				setRecipientAmount(0);
@@ -112,31 +110,27 @@ const RecipientsPage = ({
 				</>
 			);
 		};
-		const copyAddress = () => {
-			navigator.clipboard.writeText(multiSigAccount.address);
-			toast.info('Address copied to clipboard');
-		};
 
 		return (
 			<div>
 				<div className={styles.card}>
-					<p className={styles.cardHeader}>Step 3: {parsedRecipients.length === 0 ? 'Select' : 'Confirm'} Recipients</p>
+					<p className={styles.cardHeader}>Step 3: {tempRecipients.length === 0 ? 'Select' : 'Confirm'} Recipients</p>
 					{renderRecipientContent()}
 					{renderRecipientList()}
-					{renderAddReceipientForm()}
+					{renderAddRecipientForm()}
 					<button className={cn(styles.button)} onClick={() => setIsPaneOpen(true)}>
 						Add recipient
 					</button>
 					<p>{'Add transaction memo (optional)'}</p>
 					<input type='text' placeholder='Memo (Optional)' className={styles.input} value={txMemo} onChange={(e) => setTxMemo(e.target.value)} />
 					<div className={styles.backAndNextSection}>
-						<button className={styles.button} onClick={handleBack}>
+						<button className={styles.button} onClick={() => setMultiSigAccount(undefined)}>
 							Back
 						</button>
 						<button
-							disabled={parsedRecipients?.length === 0}
-							className={cn(styles.button, { [styles.buttonReady]: parsedRecipients?.length !== 0 })}
-							onClick={() => setFinalizedRecipients(parsedRecipients)}>
+							disabled={tempRecipients?.length === 0}
+							className={cn(styles.button, { [styles.buttonReady]: tempRecipients?.length !== 0 })}
+							onClick={() => setMultiSendRecipients(tempRecipients)}>
 							Next
 						</button>
 					</div>

@@ -7,6 +7,10 @@
   overflow: auto
 
 .button
+  display: flex
+  flex-direction: row
+  align-items: center
+  gap: 10px
   background-color: #444
   color: #fff
   font-weight: 600
@@ -142,6 +146,7 @@
 
 .addSignature
   display: flex
+  flex-direction: row
   padding: 1rem
   border: #f1f1f188 solid 2px
   border-radius: 1rem
@@ -219,13 +224,12 @@
   margin: 1rem
 
 .backAndNextSection
-  gap: 640px
   flex-direction: row
+  justify-content: space-between
   border-radius: 2px
   padding: 20px
   border: solid 0.2px #f1f1f111
   text-align: center
-  justify-content: space-around
 
 .tipContent
   gap: 1rem

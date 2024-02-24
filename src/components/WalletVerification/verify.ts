@@ -52,7 +52,6 @@ export async function verifyObject(data: Record<string, any>, encryptedData: str
 	const iv = encryptedArray.slice(0, 12);
 	const dataPart = encryptedArray.slice(12);
 
-	console.log('AES_KEY', AES_KEY);
 	const { key } = await getKeyAndIv(AES_KEY);
 
 	try {

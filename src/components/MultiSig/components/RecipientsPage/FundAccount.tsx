@@ -5,16 +5,23 @@ import recipientPageStyles from './RecipientsPage.module.sass';
 import { toast } from 'react-toastify';
 import { FaCopy } from '@react-icons/all-files/fa/FaCopy';
 import { HiLightBulb } from '@react-icons/all-files/hi/HiLightBulb';
-import { useSigningClient, useWallet } from '@sei-js/react';
+import { useSigningClient, useWallet, WalletConnectButton } from '@sei-js/react';
 import { calculateFee, StargateClient } from '@cosmjs/stargate';
 import Drawer from 'react-modern-drawer';
 import { Coin } from '@sei-js/proto/dist/types/codegen/cosmos/base/v1beta1/coin';
 import { pubkeyToAddress } from '@cosmjs/amino';
 import { SeiToUsei } from '../Utils/utils';
+import { useRecoilState } from 'recoil';
+import { multiSigAccountAtom } from '../../../../recoil';
+import cn from 'classnames';
+import { SinglePubkey } from '@cosmjs/amino/build/pubkeys';
 
-const FundAccount = ({ multiSigAccount, handleBack, setActivatedMultiSig }: FundAccountProps) => {
+const FundAccount = ({}: FundAccountProps) => {
 	const { connectedWallet, accounts, rpcUrl, chainId } = useWallet();
 	const { signingClient } = useSigningClient();
+
+	const [multiSigAccount, setMultiSigAccount] = useRecoilState(multiSigAccountAtom);
+
 	const [isQuerying, setIsQuerying] = useState<boolean>(false);
 	const [isSending, setIsSending] = useState<boolean>(false);
 	const [sendAmount, setSendAmount] = useState<string>('');
@@ -30,8 +37,8 @@ const FundAccount = ({ multiSigAccount, handleBack, setActivatedMultiSig }: Fund
 			setHoldings(tempHoldings);
 		};
 
-		const copyString = (s: string) => {
-			navigator.clipboard.writeText(s);
+		const copyString = async (s: string) => {
+			await navigator.clipboard.writeText(s);
 			toast.info('Copied to clipboard');
 		};
 
@@ -72,7 +79,7 @@ const FundAccount = ({ multiSigAccount, handleBack, setActivatedMultiSig }: Fund
 		};
 
 		const isValidAmount = (): boolean => {
-			return sendAmount != null && sendAmount !== '' && !isNaN(Number(sendAmount)) && Number(sendAmount) > 0;
+			return !isNaN(Number(sendAmount)) && Number(sendAmount) > 0;
 		};
 
 		const handleConfirmAccount = async () => {
@@ -86,7 +93,7 @@ const FundAccount = ({ multiSigAccount, handleBack, setActivatedMultiSig }: Fund
 				setIsQuerying(false);
 				return;
 			}
-			setActivatedMultiSig({
+			setMultiSigAccount({
 				address: fullAccount.address,
 				pubkey: multiSigAccount.pubkey,
 				accountNumber: fullAccount.accountNumber,
@@ -104,37 +111,43 @@ const FundAccount = ({ multiSigAccount, handleBack, setActivatedMultiSig }: Fund
 				}
 			};
 
+			const renderFundAccountForm = () => {
+				return (
+					<div className={styles.slidePaneContent}>
+						<div>Recipient: {multiSigAccount.address}</div>
+						<div className={styles.inputWithError}>
+							<label htmlFor='Amount'>Amount</label>
+							<input
+								type='text'
+								placeholder={'Amount to send in ' + sendDenom}
+								className={styles.input}
+								value={sendAmount}
+								onChange={(e) => setSendAmount(e.target.value)}
+							/>
+						</div>
+						{!isValidAmount() && <div className={styles.inputErrorText}>Please enter an amount greater than 0</div>}
+						<div className={styles.inputWithError}>
+							<label htmlFor='denom'>Denom:</label>
+							<input type='text' placeholder='Denom' className={styles.input} value={sendDenom} onChange={(e) => setSendDenom(e.target.value)} />
+						</div>
+						<button className={styles.button} disabled={!isValidAmount() || sendDenom == '' || isSending} type='button' onClick={handleSubmitFundAccountForm}>
+							{isSending ? 'Sending...' : 'Send Funds'}
+						</button>
+					</div>
+				);
+			};
+
 			return (
 				<>
 					<Drawer
-						className={styles.card}
+						className={cn(styles.card, 'z-1')}
 						style={{ background: '#2a2a2a' }}
 						open={isPaneOpen}
 						onClose={() => setIsPaneOpen((prevState) => !prevState)}
 						direction='left'
 						size='500px'>
-						<h2>Send funds to Multisig Account</h2>
-						<div className={styles.slidePaneContent}>
-							<div>Recipient: {multiSigAccount.address}</div>
-							<div className={styles.inputWithError}>
-								<label htmlFor='Amount'>Amount</label>
-								<input
-									type='text'
-									placeholder={'Amount to send in ' + sendDenom}
-									className={styles.input}
-									value={sendAmount}
-									onChange={(e) => setSendAmount(e.target.value)}
-								/>
-							</div>
-							{!isValidAmount() && <div className={styles.inputErrorText}>Please enter an amount greater than 0</div>}
-							<div className={styles.inputWithError}>
-								<label htmlFor='denom'>Denom:</label>
-								<input type='text' placeholder='Denom' className={styles.input} value={sendDenom} onChange={(e) => setSendDenom(e.target.value)} />
-							</div>
-							<button className={styles.button} disabled={!isValidAmount() || sendDenom == '' || !isSending} type='button' onClick={handleSubmitFundAccountForm}>
-								{isSending ? 'Sending...' : 'Send Funds'}
-							</button>
-						</div>
+						<h1 className='font-bold text-2xl'>Funds Multisig Account</h1>
+						{renderFundAccountForm()}
 					</Drawer>
 				</>
 			);
@@ -157,18 +170,22 @@ const FundAccount = ({ multiSigAccount, handleBack, setActivatedMultiSig }: Fund
 					<div className={styles.textWithCopyButton}>
 						<p>MultiSig Address: {multiSigAccount.address}</p>
 						<button onClick={() => copyString(multiSigAccount.address)} className={styles.copyButton}>
-							<FaCopy /> Copy Address
+							<FaCopy />
 						</button>
 					</div>
-					{multiSigAccount.pubkey.value.pubkeys.map((pubkey, index) => {
+					{multiSigAccount.pubkey.value.pubkeys.map((pubkey: SinglePubkey, index: number) => {
+						const address = pubkeyToAddress(pubkey, 'sei');
 						return (
-							<div className={styles.textWithCopyButton}>
+							<div key={pubkey.value} className={styles.textWithCopyButton}>
 								<p>
-									Signer {index} Address: {pubkeyToAddress(pubkey, 'sei')}
+									Signer {index} Address: {address}
 								</p>
+								<button onClick={() => copyString(address)} className={styles.copyButton}>
+									<FaCopy />
+								</button>
 								<p>Pubkey: {pubkey.value}</p>
 								<button onClick={() => copyString(pubkey.value)} className={styles.copyButton}>
-									<FaCopy /> Copy Pubkey
+									<FaCopy />
 								</button>
 							</div>
 						);
@@ -179,7 +196,7 @@ const FundAccount = ({ multiSigAccount, handleBack, setActivatedMultiSig }: Fund
 					<div className={styles.multiSigAccountInfoCard}>
 						<div>Funds:</div>
 						{holdings.length
-							? holdings.map((coin, index) => {
+							? holdings.map((coin) => {
 									return <p className={recipientPageStyles.fundText}>{coin.amount + ' ' + coin.denom}</p>;
 								})
 							: 'Refresh to show updated funds'}
@@ -188,12 +205,19 @@ const FundAccount = ({ multiSigAccount, handleBack, setActivatedMultiSig }: Fund
 						</button>
 					</div>
 				</div>
-				<button className={styles.button} onClick={() => setIsPaneOpen(true)}>
-					Fund account
-				</button>
+				{connectedWallet ? (
+					<button className={styles.button} onClick={() => setIsPaneOpen(true)}>
+						Fund account
+					</button>
+				) : (
+					<>
+						<p>Connect your wallet to fund this account</p>
+						<WalletConnectButton buttonClassName={styles.button} />
+					</>
+				)}
 				{renderFundAccountForm()}
 				<div className={styles.backAndNextSection}>
-					<button className={styles.button} onClick={handleBack}>
+					<button className={styles.button} onClick={() => setMultiSigAccount(null)}>
 						Back
 					</button>
 					<button className={styles.button} onClick={handleConfirmAccount}>

@@ -11,7 +11,7 @@
   "dependencies": {
     "@esbuild-plugins/node-globals-polyfill": "^0.2.3",
     "@react-icons/all-files": "^4.1.0",
-    "@sei-js/core": "^3.1.3",
+    "@sei-js/core": "^3.2.1",
     "@sei-js/proto": "^3.1.0",
     "@sei-js/react": "^3.2.0",
     "classnames": "^2.3.2",
@@ -24,6 +24,7 @@
     "react-icons": "^4.6.0",
     "react-json-view": "^1.21.3",
     "react-modern-drawer": "^1.2.2",
+    "react-router-dom": "^6.22.1",
     "react-toastify": "^9.1.1",
     "recoil": "^0.7.6",
     "sass": "^1.63.6"
@@ -33,8 +34,11 @@
     "@types/react": "^18.0.22",
     "@types/react-dom": "^18.0.7",
     "@vitejs/plugin-react": "^2.2.0",
+    "autoprefixer": "^10.4.17",
     "dotenv": "^16.3.1",
+    "postcss": "^8.4.35",
     "prettier": "^3.0.3",
+    "tailwindcss": "^3.4.1",
     "typescript": "^4.6.4",
     "vite": "^4.4.11"
   }

@@ -1,79 +1,75 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { MultiSigProps } from './types';
 import styles from './MultiSig.module.sass';
-import { Account, calculateFee, DeliverTxResponse, makeMultisignedTxBytes, StargateClient } from '@cosmjs/stargate';
-import { RecipientAmount } from './components/RecipientsPage/types';
+import { DeliverTxResponse } from '@cosmjs/stargate';
 import { useWallet } from '@sei-js/react';
 import 'react-modern-drawer/dist/index.css';
 import MultiSigLookup from './components/MultiSigLookup/MultiSigLookup';
 import RecipientsPage from './components/RecipientsPage/RecipientsPage';
 import SignaturePage from './components/SignaturePage/SignaturePage';
 import FundAccount from './components/RecipientsPage/FundAccount';
-import { InputAccount } from './components/MultiSigLookup/types';
+import { useNavigate } from 'react-router-dom';
+import {
+	multiSigAccountAtom,
+	multiSigEncodedSignaturesAtom,
+	multiSigInputTypeAtom,
+	multiSigLookupTypeAtom,
+	multiSigManualAccountsAtom,
+	multiSigRecipientsAtom,
+	multiSigTxMemoAtom
+} from '../../recoil';
+import { useRecoilState } from 'recoil';
+import { InputType, LookupType } from './components/MultiSigLookup/config';
 
 const MultiSig = ({}: MultiSigProps) => {
-	const { connectedWallet, accounts, chainId, rpcUrl } = useWallet();
+	const { chainId } = useWallet();
+	const navigate = useNavigate();
 
-	const [multiSigAccount, setMultiSigAccount] = useState<Account>();
-	const [activatedMultiSig, setActivatedMultiSig] = useState<Account>();
-	const [inputtedAccounts, setInputtedAccounts] = useState<InputAccount[]>([]);
-	const [multiSigThreshold, setMultiSigThreshold] = useState<number>(0);
+	const [multiSigAccount, setMultiSigAccount] = useRecoilState(multiSigAccountAtom);
+	const [multiSigManualAccounts, setMultiSigManualAccounts] = useRecoilState(multiSigManualAccountsAtom);
+	const [encodedSignatures, setEncodedSignatures] = useRecoilState(multiSigEncodedSignaturesAtom);
+	const [multiSendRecipients, setMultiSendRecipients] = useRecoilState(multiSigRecipientsAtom);
+	const [txMemo, setTxMemo] = useRecoilState(multiSigTxMemoAtom);
+	const [lookupType, setLookupType] = useRecoilState(multiSigLookupTypeAtom);
+	const [inputType, setInputType] = useRecoilState(multiSigInputTypeAtom);
+
 	const [previousSignatures, setPreviousSignatures] = useState<string[]>([]);
-
-	const [parsedRecipients, setParsedRecipients] = useState<RecipientAmount[]>([]);
-	const [finalizedRecipients, setFinalizedRecipients] = useState<RecipientAmount[]>();
-	const [txMemo, setTxMemo] = useState<string>('');
-
 	const [broadcastResponse, setBroadcastResponse] = useState<DeliverTxResponse>();
 
-	const renderMultiSigLookup = () => {
-		if (multiSigAccount) return null;
-		return (
-			<MultiSigLookup
-				setMultiSigAccount={setMultiSigAccount}
-				inputtedAccounts={inputtedAccounts}
-				setInputtedAccounts={setInputtedAccounts}
-				multiSigThreshold={multiSigThreshold}
-				setMultiSigThreshold={setMultiSigThreshold}></MultiSigLookup>
-		);
+	useEffect(() => {
+		const queryParams = new URLSearchParams(window.location.search);
+		const data = queryParams.get('data');
+		if (data) {
+			try {
+				const decodedData = JSON.parse(atob(data));
+				setMultiSigAccount(decodedData.multiSigAccount);
+				setMultiSigManualAccounts(decodedData.multiSigManualAccounts || []);
+				setEncodedSignatures(decodedData.encodedSignatures || []);
+				setMultiSendRecipients(decodedData.multiSendRecipients);
+				setTxMemo(decodedData.txMemo);
+			} catch (error) {
+				console.error('Error parsing transaction data from URL:', error);
+			}
+		}
+	}, [setMultiSigAccount, setMultiSigManualAccounts, setEncodedSignatures, setMultiSendRecipients, setTxMemo]);
+
+	const onClickReset = () => {
+		setMultiSigAccount(undefined);
+		setMultiSigManualAccounts([]);
+		setEncodedSignatures([]);
+		setMultiSendRecipients([]);
+		setTxMemo('');
+		setBroadcastResponse(undefined);
+		setPreviousSignatures([]);
+		setLookupType(LookupType.Select);
+		setInputType(InputType.Address);
 	};
 
-	const renderMultisigInfoPage = () => {
-		if (!multiSigAccount || activatedMultiSig) return null;
-		return <FundAccount multiSigAccount={multiSigAccount} handleBack={() => setMultiSigAccount(null)} setActivatedMultiSig={setActivatedMultiSig}></FundAccount>;
-	};
-
-	const renderRecipientsPage = () => {
-		if (!activatedMultiSig || finalizedRecipients) return null;
-
-		return (
-			<RecipientsPage
-				multiSigAccount={activatedMultiSig}
-				handleBack={() => setActivatedMultiSig(null)}
-				parsedRecipients={parsedRecipients}
-				txMemo={txMemo}
-				setTxMemo={setTxMemo}
-				setFinalizedRecipients={setFinalizedRecipients}
-				setParsedRecipients={setParsedRecipients}></RecipientsPage>
-		);
-	};
-
-	const renderSignatureInputs = () => {
-		if (!finalizedRecipients || !activatedMultiSig || broadcastResponse) return null;
-		return (
-			<SignaturePage
-				multiSigAccount={activatedMultiSig}
-				finalizedRecipients={finalizedRecipients}
-				txMemo={txMemo}
-				handleBack={() => setFinalizedRecipients(null)}
-				previousSignatures={previousSignatures}
-				setBroadcastResponse={setBroadcastResponse}
-				setPreviousSignatures={setPreviousSignatures}></SignaturePage>
-		);
-	};
-
-	const renderBroadcastResponse = () => {
-		if (!broadcastResponse) return null;
+	const renderContent = () => {
+		if (!multiSigAccount) return <MultiSigLookup />;
+		if (multiSigAccount.accountNumber === -1) return <FundAccount />;
+		if (multiSendRecipients.length === 0) return <RecipientsPage />;
+		if (!broadcastResponse) return <SignaturePage setBroadcastResponse={setBroadcastResponse} />;
 
 		return (
 			<div className={styles.card}>
@@ -83,19 +79,21 @@ const MultiSig = ({}: MultiSigProps) => {
 		);
 	};
 
-	const renderContent = () => {
-		return (
-			<div className={styles.content}>
-				{renderMultiSigLookup()}
-				{renderMultisigInfoPage()}
-				{renderRecipientsPage()}
-				{renderSignatureInputs()}
-				{renderBroadcastResponse()}
+	return (
+		<div className={styles.content}>
+			<div className='flex-row gap-4 items-center'>
+				<button
+					className='border-neutral-300 border-solid border-2 text-neutral-300 rounded-full px-4 py-2 w-fit font-black self-end cursor-pointer'
+					onClick={() => navigate('/')}>
+					{chainId}
+				</button>
+				<button className='bg-neutral-300 text-black rounded-full px-4 py-2 w-fit font-black self-end cursor-pointer' onClick={onClickReset}>
+					reset
+				</button>
 			</div>
-		);
-	};
-
-	return renderContent();
+			{renderContent()}
+		</div>
+	);
 };
 
 export default MultiSig;

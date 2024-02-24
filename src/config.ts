@@ -2,7 +2,7 @@ export type AppRoute = { title: string; route: string };
 
 export const CHAIN_INFO_ROUTE = {
 	title: 'Chain information',
-	route: '/chain-information'
+	route: '/'
 };
 
 export const WALLET_VERIFICATION_ROUTE = {

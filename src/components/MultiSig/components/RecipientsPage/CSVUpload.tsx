@@ -13,7 +13,6 @@ const CSVUpload = ({ onParseData }: CSVUploadProps) => {
 			header: true,
 			skipEmptyLines: true,
 			complete: (result) => {
-				console.log('result', result);
 				const isValidFormat = result.meta.fields.includes('Recipient') && result.meta.fields.includes('Amount') && result.meta.fields.includes('Denom');
 				const hasMemo = result.meta.fields.includes('Memo');
 
