@@ -43,7 +43,7 @@ const MultiSigLookup = ({}: MultiSigLookupProps) => {
 		const account = await broadcaster.getAccount(multiSigAccountAddress);
 		if (!account || !account.pubkey || !isMultisigThresholdPubkey(account.pubkey)) {
 			toast.info(
-				`The account address you entered is not a multi-sig account that exists on ${chainId}. Please create a new multi-sig account by entering all the account addresses and threshold for the new multi-sig.`
+				`The account address you entered is not a multi-sig account that exists on ${chainId}. Please create a new multi-sig account by entering all the signer addresses and threshold desired.`
 			);
 			setIsQueryingMultiSigAccount(false);
 			setLookupType(LookupType.Create);
@@ -214,8 +214,10 @@ const MultiSigLookup = ({}: MultiSigLookupProps) => {
 		return (
 			<div className={styles.card}>
 				<p className={styles.cardHeader}>Step 1: Create multi-sig account</p>
+				{renderThresholdSection()}
+				<TableWithDelete items={multiSigManualAccounts} setItems={setMultiSigManualAccounts} />
 				<div className={styles.card}>
-					<p className={multiSigLookupStyles.cardHeader}>Add new signer account</p>
+					<p className={multiSigLookupStyles.cardHeader}>Add a signer</p>
 					<div className={styles.inputWithError}>
 						<input
 							placeholder={getInputPlaceholder()}
@@ -223,7 +225,7 @@ const MultiSigLookup = ({}: MultiSigLookupProps) => {
 							value={newMultiSigAccountInput}
 							onChange={(e) => handleMultiSigAccountInput(e.target.value)}
 						/>
-						<button className={styles.button} onClick={handleAddAccount}>
+						<button disabled={!isValidSeiAddress(newMultiSigAccountInput)} className={styles.button} onClick={handleAddAccount}>
 							Add Account
 						</button>
 						<p className='cursor-pointer hover:underline' onClick={handleChangeInput}>
@@ -231,8 +233,6 @@ const MultiSigLookup = ({}: MultiSigLookupProps) => {
 						</p>
 					</div>
 				</div>
-				<TableWithDelete items={multiSigManualAccounts} setItems={setMultiSigManualAccounts} />
-				{renderThresholdSection()}
 				<div className={styles.backAndNextSection}>
 					<button className={styles.button} onClick={() => setLookupType(LookupType.Select)}>
 						Back

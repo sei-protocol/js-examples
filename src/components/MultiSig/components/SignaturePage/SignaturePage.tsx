@@ -147,6 +147,7 @@ const SignaturePage = ({ setBroadcastResponse }: SignaturePageProps) => {
 
 	const copyLink = async () => {
 		const rawObject = {
+			chainId,
 			multiSigAccount,
 			multiSigManualAccounts,
 			encodedSignatures,

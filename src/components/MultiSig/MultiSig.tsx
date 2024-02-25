@@ -16,7 +16,8 @@ import {
 	multiSigLookupTypeAtom,
 	multiSigManualAccountsAtom,
 	multiSigRecipientsAtom,
-	multiSigTxMemoAtom
+	multiSigTxMemoAtom,
+	selectedChainConfigAtom
 } from '../../recoil';
 import { useRecoilState } from 'recoil';
 import { InputType, LookupType } from './components/MultiSigLookup/config';
@@ -32,6 +33,7 @@ const MultiSig = ({}: MultiSigProps) => {
 	const [txMemo, setTxMemo] = useRecoilState(multiSigTxMemoAtom);
 	const [lookupType, setLookupType] = useRecoilState(multiSigLookupTypeAtom);
 	const [inputType, setInputType] = useRecoilState(multiSigInputTypeAtom);
+	const [chainConfiguration, setChainConfiguration] = useRecoilState(selectedChainConfigAtom);
 
 	const [previousSignatures, setPreviousSignatures] = useState<string[]>([]);
 	const [broadcastResponse, setBroadcastResponse] = useState<DeliverTxResponse>();
@@ -42,11 +44,18 @@ const MultiSig = ({}: MultiSigProps) => {
 		if (data) {
 			try {
 				const decodedData = JSON.parse(atob(data));
+				console.log('decodedData', decodedData);
 				setMultiSigAccount(decodedData.multiSigAccount);
 				setMultiSigManualAccounts(decodedData.multiSigManualAccounts || []);
 				setEncodedSignatures(decodedData.encodedSignatures || []);
 				setMultiSendRecipients(decodedData.multiSendRecipients);
 				setTxMemo(decodedData.txMemo);
+
+				switch (decodedData.chainId) {
+					case 'atlantic-2':
+						setChainConfiguration('atlantic-2');
+						break;
+				}
 			} catch (error) {
 				console.error('Error parsing transaction data from URL:', error);
 			}

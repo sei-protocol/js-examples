@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import { FundAccountProps } from './types';
 import styles from '../../MultiSig.module.sass';
 import recipientPageStyles from './RecipientsPage.module.sass';
@@ -15,10 +15,13 @@ import { useRecoilState } from 'recoil';
 import { multiSigAccountAtom } from '../../../../recoil';
 import cn from 'classnames';
 import { SinglePubkey } from '@cosmjs/amino/build/pubkeys';
+import { FaInfoCircle } from '@react-icons/all-files/fa/FaInfoCircle';
 
 const FundAccount = ({}: FundAccountProps) => {
 	const { connectedWallet, accounts, rpcUrl, chainId } = useWallet();
 	const { signingClient } = useSigningClient();
+
+	const infoModal = useRef<HTMLDialogElement>(null);
 
 	const [multiSigAccount, setMultiSigAccount] = useRecoilState(multiSigAccountAtom);
 
@@ -153,6 +156,32 @@ const FundAccount = ({}: FundAccountProps) => {
 			);
 		};
 
+		const renderMultiSigInfo = () => {
+			return (
+				<dialog ref={infoModal}>
+					<div className={styles.card}>
+						{multiSigAccount.pubkey.value.pubkeys.map((pubkey: SinglePubkey, index: number) => {
+							const address = pubkeyToAddress(pubkey, 'sei');
+							return (
+								<div key={pubkey.value} className={styles.textWithCopyButton}>
+									<p>
+										Signer {index} Address: {address}
+									</p>
+									<button onClick={() => copyString(address)} className={styles.copyButton}>
+										<FaCopy />
+									</button>
+									<p>Pubkey: {pubkey.value}</p>
+									<button onClick={() => copyString(pubkey.value)} className={styles.copyButton}>
+										<FaCopy />
+									</button>
+								</div>
+							);
+						})}
+					</div>
+				</dialog>
+			);
+		};
+
 		return (
 			<div className={styles.card}>
 				<div className={styles.cardHeader}>Step 2: Fund Multisig Account</div>
@@ -172,24 +201,11 @@ const FundAccount = ({}: FundAccountProps) => {
 						<button onClick={() => copyString(multiSigAccount.address)} className={styles.copyButton}>
 							<FaCopy />
 						</button>
+						<button onClick={() => infoModal.current.showModal()} className={styles.copyButton}>
+							<FaInfoCircle />
+						</button>
 					</div>
-					{multiSigAccount.pubkey.value.pubkeys.map((pubkey: SinglePubkey, index: number) => {
-						const address = pubkeyToAddress(pubkey, 'sei');
-						return (
-							<div key={pubkey.value} className={styles.textWithCopyButton}>
-								<p>
-									Signer {index} Address: {address}
-								</p>
-								<button onClick={() => copyString(address)} className={styles.copyButton}>
-									<FaCopy />
-								</button>
-								<p>Pubkey: {pubkey.value}</p>
-								<button onClick={() => copyString(pubkey.value)} className={styles.copyButton}>
-									<FaCopy />
-								</button>
-							</div>
-						);
-					})}
+					{renderMultiSigInfo()}
 					<p>
 						Threshold: {multiSigAccount.pubkey.value.threshold} of {multiSigAccount.pubkey.value.pubkeys.length} signatures required
 					</p>
