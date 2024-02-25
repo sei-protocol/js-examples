@@ -1,0 +1,59 @@
+.changeButton
+  background-color: #444
+  color: red
+  font-weight: 600
+  border: none
+  padding: 5px 10px
+  border-radius: 5px
+  font-size: 12px
+  cursor: pointer
+  transition: background-color 0.3s, box-shadow 0.3s
+  text-align: center
+  user-select: none
+
+  &:hover
+    background-color: #555
+
+  &:focus
+    outline: none
+    box-shadow: 0 0 8px rgba(255, 255, 255, 0.6)
+
+.cardHeader
+  font-size: 1rem
+  font-weight: bold
+
+.thresholdModule
+  flex-direction: row
+  float: left
+  align: center
+  gap: 1rem
+
+.thresholdInput
+  max-width: 100px
+  background-color: #333
+  color: #fff
+  border: 1px solid #555
+  padding: 10px 15px
+  border-radius: 5px
+  font-size: 20px
+  transition: border-color 0.3s, box-shadow 0.3s
+
+  &::placeholder
+    color: #aaa
+
+  &:focus
+    outline: none
+    border-color: #fff
+    box-shadow: 0 0 8px rgba(255, 255, 255, 0.6)
+
+  &:active
+    color: #fff
+
+  &.error
+    border-color: red
+
+    &::placeholder
+      color: red
+
+.thresholdText
+  font-size: 28px

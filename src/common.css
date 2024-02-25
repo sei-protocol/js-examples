@@ -13,6 +13,7 @@
 }
 
 .cardContent {
+    flex-direction: column;
     width: 100%;
     gap: 2rem;
     margin-top: 1rem;
@@ -22,6 +23,10 @@
     margin: 12px 24px 12px 0;
     height: 40px;
     width: 360px;
+}
+
+.Dropdown-menu {
+    flex-direction: column;
 }
 
 .Dropdown-control {

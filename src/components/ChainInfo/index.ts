@@ -1,1 +1,1 @@
-export { default as ChainInfo } from './ChainInfo'
+export { default as ChainInfo } from './ChainInfo';

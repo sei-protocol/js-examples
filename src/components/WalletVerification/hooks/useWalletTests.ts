@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { StdSignature } from '@cosmjs/amino';
 import { AccountData, OfflineSigner } from '@cosmjs/proto-signing';
 import { toast } from 'react-toastify';
@@ -21,8 +21,20 @@ export const useWalletTests = () => {
 	const [getOfflineSignerAutoResponse, setGetOfflineSignerAutoResponse] = useState<OfflineSigner | undefined>();
 	const [getOfflineSignerAutoError, setGetOfflineSignerAutoError] = useState<string | undefined>();
 
-	const testGetAccounts = async () => {
+	useEffect(() => {
+		if (!connectedWallet) {
+			setSignArbitraryResponse(undefined);
+			setSignArbitraryError(undefined);
+			setGetOfflineSignerResponse(undefined);
+			setGetOfflineSignerError(undefined);
+			setGetAccountsResponse(undefined);
+			setGetAccountsError(undefined);
+			setGetOfflineSignerAutoResponse(undefined);
+			setGetOfflineSignerAutoError(undefined);
+		}
+	}, [connectedWallet]);
 
+	const testGetAccounts = async () => {
 		try {
 			setGetAccountsResponse(undefined);
 			setGetAccountsError(undefined);
@@ -77,5 +89,18 @@ export const useWalletTests = () => {
 		}
 	};
 
-	return { signArbitraryResponse, signArbitraryError, getOfflineSignerResponse, getOfflineSignerError, getAccountsResponse, getAccountsError, getOfflineSignerAutoResponse, getOfflineSignerAutoError, testGetOfflineSigner, testGetAccounts, testSignArbitrary, testGetOfflineSignerAuto };
-}
+	return {
+		signArbitraryResponse,
+		signArbitraryError,
+		getOfflineSignerResponse,
+		getOfflineSignerError,
+		getAccountsResponse,
+		getAccountsError,
+		getOfflineSignerAutoResponse,
+		getOfflineSignerAutoError,
+		testGetOfflineSigner,
+		testGetAccounts,
+		testSignArbitrary,
+		testGetOfflineSignerAuto
+	};
+};
